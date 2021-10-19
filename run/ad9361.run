@@ -59,6 +59,9 @@ set config  {
 				<device name="axi-gpio" type="gpio">
 					<io_mem address="0x41600000" size="0x1000"/>;
 				</device>
+				<device name="zynq-gpio" type="zynq-gpio">
+					<io_mem address="0xe0006000" size="0x1000"/>;
+				</device>
 				<device name="axi-spi" type="spi">
 					<io_mem address="0x43c00000" size="0x10000"/>;
 				</device>
@@ -83,6 +86,7 @@ set config  {
 					<device name="axi-dac-tx"/>
 					<device name="regif"/>
 					<device name="axi-gpio"/>
+					<device name="zynq-gpio"/>
 				</policy>
 			</config>
 		</start>
