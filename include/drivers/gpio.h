@@ -1,98 +1,118 @@
 /*
- * \brief  Gpio Driver for Zynq
- * \author Mark Albers
- * \date   2015-04-02
+ * \brief  Zynq GPIO driver
+ * \author Johannes Schlatow
+ * \date   2021-10-19
  */
 
 /*
- * Copyright (C) 2011-2017 Genode Labs GmbH
+ * Copyright (C) 2021 Genode Labs GmbH
  *
  * This file is part of the Genode OS framework, which is distributed
  * under the terms of the GNU Affero General Public License version 3.
  */
 
-#ifndef _GPIO_H_
-#define _GPIO_H_
+#ifndef _INCLUDE__DRIVERS__GPIO_H_
+#define _INCLUDE__DRIVERS__GPIO_H_
 
-#include <base/attached_io_mem_dataspace.h>
-#include <util/mmio.h>
+#include <platform_session/device.h>
 
 namespace Gpio {
 	using namespace Genode;
-	class Zynq_Gpio;
+
+	class Zynq_regs;
 }
 
-struct Gpio::Zynq_Gpio : Attached_io_mem_dataspace, Mmio
+class Gpio::Zynq_regs : public Platform::Device::Mmio
 {
-	Zynq_Gpio(Genode::Env &env, Genode::addr_t const mmio_base, Genode::size_t const mmio_size) :
-		Genode::Attached_io_mem_dataspace(env, mmio_base, mmio_size),
-		Genode::Mmio((Genode::addr_t)local_addr<void>())
-	{ }
+	private:
 
-	~Zynq_Gpio()
-	{ }
+		enum {
+			INPUT = 0,
+			OUTPUT = 1
+		};
 
-	/*
-	 * Registers
-	 */
+		/*
+		 * Registers
+		 */
 
-	struct GPIO_DATA : Register<0x00, 32> {};
+		/* output data register bank 0-3 */
+		struct Out0 : Register_array<0x040, 32, 32, 1> { };
+		struct Out1 : Register_array<0x044, 32, 22, 1> { };
+		struct Out2 : Register_array<0x048, 32, 32, 1> { };
+		struct Out3 : Register_array<0x04c, 32, 32, 1> { };
 
-	struct GPIO_TRI : Register<0x04, 32> {};
+		/* input data register bank 0-3 */
+		struct In0 : Register_array<0x060, 32, 32, 1> { };
+		struct In1 : Register_array<0x064, 32, 22, 1> { };
+		struct In2 : Register_array<0x068, 32, 32, 1> { };
+		struct In3 : Register_array<0x06c, 32, 32, 1> { };
 
-	struct GPIO2_DATA : Register<0x08, 32> {};
+		/* direction registers bank 0-3 */
+		struct Dirm0 : Register_array<0x204, 32, 32, 1> { };
+		struct Dirm1 : Register_array<0x244, 32, 22, 1> { };
+		struct Dirm2 : Register_array<0x284, 32, 32, 1> { };
+		struct Dirm3 : Register_array<0x2C4, 32, 32, 1> { };
 
-	struct GPIO2_TRI : Register<0x0C, 32> {};
+		/* output enable registers bank 0-3 */
+		struct Oen0 : Register_array<0x208, 32, 32, 1> { };
+		struct Oen1 : Register_array<0x248, 32, 22, 1> { };
+		struct Oen2 : Register_array<0x288, 32, 32, 1> { };
+		struct Oen3 : Register_array<0x2C8, 32, 32, 1> { };
 
-	struct GIER : Register<0x011C, 32>
-	{
-		struct Global_Interrupt_Enable : Bitfield<31,1> {};
-	};
+	public:
 
-	struct IP_IER : Register<0x0128, 32>
-	{
-		struct Channel_1_Interrupt_Enable : Bitfield<0,1> {};
-		struct Channel_2_Interrupt_Enable : Bitfield<1,1> {};
-	};
+		Zynq_regs(Platform::Device &device)
+		: Platform::Device::Mmio(device)
+		{ }
 
-	struct IP_ISR : Register<0x120, 32>
-	{
-		struct Channel_1_Interrupt_Status : Bitfield<0,1> {};
-		struct Channel_2_Interrupt_Status : Bitfield<1,1> {};
-	};
-
-
-	/*
-	 * Functions
-	 */
-	Genode::uint8_t gpio_read(bool isChannel2)
-	{
-		if (isChannel2)
+		void direction(unsigned pin, bool input)
 		{
-			write<GPIO2_TRI>(0xffffffff);
-			return read<GPIO2_DATA>();
+			if (pin < 32) {
+				if (input)
+					write<Dirm0>(INPUT,  pin);
+				else {
+					write<Dirm0>(OUTPUT, pin);
+					write<Oen0> (1,      pin);
+				}
+			} else if (pin < 54) {
+				if (input)
+					write<Dirm1>(INPUT,  pin-32);
+				else {
+					write<Dirm1>(OUTPUT, pin-32);
+					write<Oen1> (1,      pin-32);
+				}
+			} else if (pin < 86) {
+				if (input)
+					write<Dirm2>(INPUT,  pin-54);
+				else {
+					write<Dirm2>(OUTPUT, pin-54);
+					write<Oen2> (1,      pin-54);
+				}
+			} else {
+				if (input)
+					write<Dirm3>(INPUT,  pin-86);
+				else {
+					write<Dirm3>(OUTPUT, pin-86);
+					write<Oen3> (1,      pin-86);
+				}
+			}
 		}
-		else
-		{
-			write<GPIO_TRI>(0xffffffff);
-			return read<GPIO_DATA>();
-		}
-	}
 
-	bool gpio_write(Genode::uint8_t data, bool isChannel2)
-	{
-		if (isChannel2)
+		void set_output_pin(unsigned pin, bool level)
 		{
-			write<GPIO2_TRI>(0);
-			write<GPIO2_DATA>(data);
+			if      (pin < 32)  write<Out0>(level, pin);
+			else if (pin < 54)  write<Out1>(level, pin-32);
+			else if (pin < 86)  write<Out2>(level, pin-54);
+			else                write<Out3>(level, pin-86);
 		}
-		else
+
+		bool get_input_pin(unsigned pin)
 		{
-			write<GPIO_TRI>(0);
-			write<GPIO_DATA>(data);
+			if      (pin < 32)  return read<In0>(pin);
+			else if (pin < 54)  return read<In1>(pin-32);
+			else if (pin < 86)  return read<In2>(pin-54);
+			else                return read<In3>(pin-86);
 		}
-		return true;
-	}
 };
 
-#endif // _GPIO_H_
+#endif /* _INCLUDE__DRIVERS__GPIO_H_ */

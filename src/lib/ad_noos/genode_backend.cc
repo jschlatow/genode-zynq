@@ -46,3 +46,14 @@ unsigned long genode_dev_addr(const char * name)
 	return Ad::platform().addr_by_name(name);
 }
 
+extern "C"
+void genode_gpio_direction(unsigned pin, bool input)
+{
+	Ad::platform().gpio.direction(pin, input);
+}
+
+extern "C"
+void genode_gpio_write(unsigned pin, unsigned value)
+{
+	Ad::platform().gpio.set_output_pin(pin, value);
+}

@@ -17,6 +17,8 @@
 #include "util.h"
 #include "gpio.h"
 
+#include "genode_backend.h"
+
 #define TRACE printf("\033[32m%s\033[0m called from %p, not implemented\n", __PRETTY_FUNCTION__, __builtin_return_address(0))
 
 /**
@@ -86,9 +88,8 @@ int32_t genode_gpio_direction_input(struct gpio_desc *desc)
 int32_t genode_gpio_direction_output(struct gpio_desc *desc,
                                      uint8_t           value)
 {
-	TRACE;
-	printf("Setting output direction of GPIO %d to %d\n", desc->number, value);
-	return FAILURE;
+	genode_gpio_direction(desc->number, false);
+	return SUCCESS;
 }
 
 /**
@@ -118,8 +119,8 @@ int32_t genode_gpio_get_direction(struct gpio_desc *desc,
 int32_t genode_gpio_set_value(struct gpio_desc *desc,
                               uint8_t           value)
 {
-	TRACE;
-	return FAILURE;
+	genode_gpio_write(desc->number, value);
+	return SUCCESS;
 }
 
 /**

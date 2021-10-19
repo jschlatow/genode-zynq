@@ -1,0 +1,75 @@
+#
+# Build
+#
+create_boot_directory
+
+import_from_depot [depot_user]/src/[base_src] \
+                  [depot_user]/src/init \
+                  [depot_user]/src/zynq_platform_drv \
+                  [depot_user]/raw/[board]-devices
+
+# generic components
+set build_components {
+	test/gpio
+}
+
+build $build_components
+
+#
+# Config
+#
+
+set config  {
+	<config verbose="yes">
+		<parent-provides>
+			<service name="ROM"/>
+			<service name="PD"/>
+			<service name="CPU"/>
+			<service name="LOG"/>
+			<service name="IO_MEM"/>
+			<service name="IRQ"/>
+		</parent-provides>
+		<default-route>
+			<any-service> <parent/> <any-child/> </any-service>
+		</default-route>
+		<default caps="200"/>
+
+		<start name="timer">
+			<resource name="RAM" quantum="1M"/>
+			<provides><service name="Timer"/></provides>
+		</start>
+		<start name="test-gpio">
+			<resource name="RAM" quantum="1M"/>
+		</start>
+
+		<start name="platform_drv" caps="100">
+			<binary name="zynq_platform_drv"/>
+			<resource name="RAM" quantum="1M"/>
+			<provides> <service name="Platform"/> </provides>
+			<route> <any-service> <parent/> </any-service> </route>
+			<config>
+				<policy label="test-gpio -> " info="yes">
+					<device name="gpio0"/>
+				</policy>
+			</config>
+		</start>
+	</config>
+}
+
+install_config $config
+
+
+#
+# Boot modules
+#
+
+# generic modules
+set boot_modules {
+	test-gpio
+}
+
+build_boot_image $boot_modules
+
+append qemu_args " -nographic "
+run_genode_until forever
+
