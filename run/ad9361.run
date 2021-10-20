@@ -53,6 +53,12 @@ set config  {
 			<provides> <service name="Platform"/> </provides>
 			<route> <any-service> <parent/> </any-service> </route>
 			<config>
+				<device name="spi0" type="zynq-spi">
+					<io_mem address="0xe0006000" size="0x1000"/>
+					<property name="input-clock" value="166666665"/>
+					<property name="spi-max-frequency" value="0x989680"/>
+					<property name="spi-cpha" value="yes"/>
+				</device>
 				<device name="regif" type="regif">
 					<io_mem address="0x43c20000" size="0x10000"/>;
 				</device>
@@ -60,7 +66,7 @@ set config  {
 					<io_mem address="0x41600000" size="0x1000"/>;
 				</device>
 				<device name="zynq-gpio" type="zynq-gpio">
-					<io_mem address="0xe0006000" size="0x1000"/>;
+					<io_mem address="0xe000a000" size="0x1000"/>;
 				</device>
 				<device name="axi-spi" type="spi">
 					<io_mem address="0x43c00000" size="0x10000"/>;
@@ -87,6 +93,7 @@ set config  {
 					<device name="regif"/>
 					<device name="axi-gpio"/>
 					<device name="zynq-gpio"/>
+					<device name="spi0"/>
 				</policy>
 			</config>
 		</start>
