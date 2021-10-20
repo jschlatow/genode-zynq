@@ -57,3 +57,9 @@ void genode_gpio_write(unsigned pin, unsigned value)
 {
 	Ad::platform().gpio.set_output_pin(pin, value);
 }
+
+extern "C"
+unsigned genode_spi_transfer(unsigned char *buf, unsigned bytes)
+{
+	return Ad::platform().spi.write_and_read(buf, bytes);
+}

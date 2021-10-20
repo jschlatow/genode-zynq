@@ -14,8 +14,12 @@
 #include <stdio.h>
 #include "error.h"
 #include "spi.h"
+#include "util.h"
+
+#include "genode_backend.h"
 
 #define TRACE printf("\033[32m%s\033[0m called from %p, not implemented\n", __PRETTY_FUNCTION__, __builtin_return_address(0))
+
 
 const struct spi_platform_ops genode_spi_ops;
 
@@ -28,8 +32,6 @@ const struct spi_platform_ops genode_spi_ops;
 int32_t genode_spi_init(      struct spi_desc      **desc,
                         const struct spi_init_param *param)
 {
-	TRACE;
-
 	static spi_desc _desc;
 	_desc.device_id     = param->device_id;
 	_desc.max_speed_hz  = param->max_speed_hz;
@@ -63,8 +65,10 @@ int32_t genode_spi_write_and_read(struct spi_desc *desc,
                                   uint8_t         *data,
                                   uint16_t         bytes_number)
 {
-	TRACE;
-	return FAILURE;
+	if (genode_spi_transfer(data, bytes_number) != bytes_number)
+		return FAILURE;
+
+	return SUCCESS;
 }
 
 /**

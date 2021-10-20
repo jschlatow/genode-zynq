@@ -19,6 +19,7 @@
 #include <platform_session/connection.h>
 #include <platform_session/device.h>
 #include <drivers/gpio.h>
+#include <drivers/spi.h>
 
 namespace Ad {
 	struct Platform;
@@ -59,6 +60,7 @@ struct Ad::Platform
 	Genode::Heap                 heap      { env.ram(), env.rm() };
 	Device                       gpiodev   { platform, Device::Type { "zynq-gpio" } };
 	Gpio::Zynq_regs              gpio      { gpiodev };
+	Spi::Zynq_driver             spi       { platform, Device::Type { "zynq-spi" } };
 
 	Platform(Genode::Env & env) : env(env) { }
 
