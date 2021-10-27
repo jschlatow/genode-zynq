@@ -41,12 +41,6 @@ int32_t axi_io_read(uint32_t base, uint32_t offset, uint32_t * value)
 }
 
 extern "C"
-unsigned long genode_dev_addr(const char * name)
-{
-	return Ad::platform().addr_by_name(name);
-}
-
-extern "C"
 void genode_gpio_direction(unsigned pin, bool input)
 {
 	Ad::platform().gpio.direction(pin, input);
