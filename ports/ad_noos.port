@@ -7,6 +7,3 @@ REV(no-os) := 5d7bd8061668cc8e4893dd5ec1d3ff75aedd3e76
 URL(no-os) := https://github.com/analogdevicesinc/no-OS.git \
               --recursive
 DIR(no-os) := src
-
-PATCHES    := src/lib/ad_noos/ad9361.patch
-PATCH_OPT  := -p1 --directory=src
