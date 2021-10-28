@@ -1,0 +1,5 @@
+Test for axi_dmac IP core. Requires an FPGA loopback design that
+sends the received data back to the processing system.
+
+Documentation of the axi_dmac:
+[https://wiki.analog.com/resources/fpga/docs/axi_dmac]
