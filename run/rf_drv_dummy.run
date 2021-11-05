@@ -1,0 +1,312 @@
+##
+# Use rf_drv_dummy to test routing between multiple nic_routers interconnected
+# via radio. The radio channel is represented by the nic_bus component.
+#
+#  to qemu host
+#       |
+#  -----------                   ---------------------
+#  | nic_drv |--- Uplink --------| nic_router_master |
+#  -----------           "uplink"---------------------
+#                         domain          |  "rf" domain
+#                                        Nic
+#                                         |
+#                                    -----------
+#                                    | nic_bus |
+#                                    -----------
+#                                         |
+#                                        Nic
+#                                         | "rf" domain
+# ------------                   --------------------
+# | lighttpd |------ Nic --------| nic_router_slave |
+# ------------            "http" --------------------
+#                         domain
+#
+# nic_router_master gets its IP for the uplink domain via the nic_drv from the
+# host and acts as a DHCP server on the rf domain. nic_router_slave thus
+# gets its IP for the rf domain from via nic_bus from nic_router_master.
+# lighttpd gets its IP from the DHCP server implemented by nic_router_slave for
+# the http domain.
+# Port forwarding and NATing is performed by the nic_routers between the
+# domains/subnets so that the http server is accessible via http://localhost:5555
+# on the host system.
+#
+
+
+if {![have_include power_on/qemu]} {
+	puts "Runs script requires qemu"
+	exit 0
+}
+
+create_boot_directory
+
+import_from_depot [depot_user]/src/[base_src] \
+                  [depot_user]/pkg/[drivers_nic_pkg] \
+                  [depot_user]/src/lighttpd \
+                  [depot_user]/src/libc \
+                  [depot_user]/src/openssl \
+                  [depot_user]/src/posix \
+                  [depot_user]/src/vfs \
+                  [depot_user]/src/vfs_lwip \
+                  [depot_user]/src/zlib
+
+set build_components {
+	init
+	app/ping
+	server/nic_router
+	drivers/nic/rf
+	server/nic_bus
+}
+
+build $build_components
+
+append config {
+
+<config>
+
+	<parent-provides>
+		<service name="ROM"/>
+		<service name="IRQ"/>
+		<service name="IO_MEM"/>
+		<service name="IO_PORT"/>
+		<service name="PD"/>
+		<service name="RM"/>
+		<service name="CPU"/>
+		<service name="LOG"/>
+	</parent-provides>
+
+	<default-route>
+		<any-service> <parent/> <any-child/> </any-service>
+	</default-route>
+	<default caps="200"/>
+
+	<start name="nic_drv" caps="1000" managing_system="yes">
+		<resource name="RAM" quantum="32M"/>
+		<binary name="init"/>
+		<route>
+			<service name="ROM" label="config"> <parent label="drivers.config"/> </service>
+			<service name="Timer"> <child name="timer"/> </service>
+			<service name="Uplink"> <child name="nic_router_master"/> </service>
+			<any-service> <parent/> </any-service>
+		</route>
+	</start>
+
+	<start name="timer">
+		<resource name="RAM" quantum="1M"/>
+		<provides><service name="Timer"/></provides>
+	</start>
+
+	<start name="nic_router_master">
+		<binary name="nic_router"/>
+		<resource name="RAM" quantum="10M"/>
+		<provides>
+			<service name="Nic"/>
+			<service name="Uplink"/>
+		</provides>
+		<config verbose_domain_state="yes">
+			<policy label="rf_drv_1 -> " domain="rf"/>
+			<default-policy              domain="uplink"/>
+
+			<domain name="uplink">
+
+				<nat domain="rf"
+				     tcp-ports="16384"
+				     udp-ports="16384"
+				     icmp-ids="16384"/>
+
+				<tcp-forward port="80" domain="rf" to="10.0.3.2"/>
+			</domain>
+
+
+			<domain name="rf" interface="10.0.3.1/24">
+
+				<dhcp-server ip_first="10.0.3.2"
+				             ip_last="10.0.3.200"/>
+
+			</domain>
+		</config>
+	</start>
+
+	<start name="nic_router_slave">
+		<binary name="nic_router"/>
+		<resource name="RAM" quantum="10M"/>
+		<provides>
+			<service name="Nic"/>
+			<service name="Uplink"/>
+		</provides>
+		<config verbose_domain_state="yes">
+
+			<policy label_prefix="rf_drv_2 -> " domain="rf"/>
+			<policy label_prefix="lighttpd -> " domain="http"/>
+
+			<domain name="rf">
+				<tcp-forward port="80" domain="http" to="10.0.4.2"/>
+			</domain>
+			<domain name="http" interface="10.0.4.1/24">
+				<dhcp-server ip_first="10.0.4.2"
+				             ip_last="10.0.4.2"/>
+			</domain>
+
+		</config>
+	</start>
+
+	<start name="lighttpd" caps="200">
+		<resource name="RAM" quantum="512M" />
+		<config>
+			<arg value="lighttpd" />
+			<arg value="-f" />
+			<arg value="/etc/lighttpd/lighttpd.conf" />
+			<arg value="-D" />
+			<vfs>
+				<dir name="dev">
+					<log/> <null/> <inline name="rtc">2000-01-01 00:00</inline>
+					<inline name="random">0123456789012345678901234567890123456789</inline>
+				</dir>
+				<dir name="socket"> <lwip dhcp="yes"/> </dir>
+				<dir name="etc">
+					<dir name="lighttpd">
+						<inline name="lighttpd.conf">
+# lighttpd configuration
+server.port            = 80
+server.document-root   = "/website"
+server.event-handler   = "select"
+server.network-backend = "write"
+server.upload-dirs     = ( "/tmp" )
+server.modules         = ("mod_openssl")
+index-file.names     = (
+  "index.xhtml", "index.html", "index.htm"
+)
+mimetype.assign      = (
+  ".html"         =>      "text/html",
+  ".htm"          =>      "text/html"
+)
+$SERVER["socket"] == ":443" {
+	ssl.engine  = "enable"
+	ssl.pemfile = "/etc/lighttpd/example.pem"
+}
+						</inline>
+						<inline name="example.pem">
+-----BEGIN PRIVATE KEY-----
+MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC4KHUZjDRew89c
+wDlYPz9XFigcMDnDlHzdg2ByrGZIOUNYC5LH1QUK0TDbPP45Xx455niA0QY85dMQ
+4DQx0Qk6+TDpVD3F2MYQgbIX6YkX9kgqX+jiHgsNzRD4KamNYmfUY+dJhlZEXWAF
+uNSnRLvg4EH72AVKLLKiruGwkisW/AYU6dNE8iFOYL8Q75bBUADiQSDdD8vkpeXg
+1NqxNyHPR6YRbA+vqcK0kbC8btKR9wG6m99OhTR4x3M87vtFFLNtJNEf54fYxi+L
+1rljSqHbaXD+XJsVKgX+UlI1ZlYW4KqlMciMemkBp0CovCxLfsbMmkXAW2RONpkm
++sdO3CXFAgMBAAECggEAIKv00nqAVAuzP0ZPJivaZe3lYdLgfKVcXcRQGSgi4U9f
+dkBfYxqU0W15mHvCspUAfM85s8jhrW4suwK739axJ4hMOCkc6Hvj78vCt+FT1C96
+cCIh4/PmjCVEjHJ/xTifKRwsTWwK5AgY4AsBl0dneabvremOTrGNY7VZDwVvpZz1
+qXkSNjQ63tZKj9cESO5ceGLzuBAG6JDDpqJM5fmdsQ36/QVz9Gogr8bXEWFM1TOo
+lWVAPB/l6nqKurfMv+5th354+owv9CGKxqLBE1fujwE2VogBz7mkR/rnABOPU5ev
+wQVLXoUkO2bI8Uvc28lChaiG6ihfdmNCmwoi56HFRQKBgQDj0WoIxiY7H42KV7Hh
+uQZv/0aoQyjXuqJ7Vq0HdxOAxZr0GpSYgo3MTZWooI2AnAstPHXo0BsQr+XVijWm
+xiDxMM4p9nrBzjEIHwyDaf62Pz/6lIPdenynLiEIOUbocJ3r0/3tCrY3U7fgjzYY
+f9PZmXKEOOKdbVPyXG0OIJ/ADwKBgQDO8GkCdVGy/YB0X7ntqcBG0xgmDnKRmYpQ
+X7Tb377AT2lzvftxaRVrx+UXtvFdy4xdrxjqHJCgOHT/fsAfjJlo7v1+KhTvE0pt
+jCdJPLbzXJRwaISaeEaMJ/N8Vv/j2/YuoS5M5vh4NlWeO16HtF7N9V9cMEZ5iRW1
+9G/eWgOo6wKBgQCY6rn3xblnuhgxogd+ccmGZ50v2FST6WyiyV0/Q4hNyVXnP+g6
+LneriPBJzertRtChvpGOghGIs+jb2veESD1YZ+Aafp2LdTGoN98YXo9gGTiCpCmX
+Al6lgOsfMAMOhnkaEKPC9ou0u3cTPk2bSEIVL1CUu/IwpW/RoIR7FR7ltQKBgQDA
+RAmsqQfhPzqL5SzALclhhFuZcC7uLDOf/WvyJW37C000pjzp3/JxE2Y8pFKZDLc7
+i6WgTi3pTssVXtRt+5nFLtcC02Jjxg6OvXr6xphMf6XC0rjxM/KH4c6Npd9V+1Y9
+eK+l76rHNeRSgWKQvvqebO3On2O7I6yyQ4t0kTl5RQKBgQCbX1cTtNmNr6HNleXL
+zfclKESSYy57uq3fQxhRrEE2ZNbemLOxEuoBCFYoMwpZEjC1GZyICrM7o5673/Ih
+I0oZerUBmt2l8noZCQoITEa97bCbp2vIdHYnCf/H3Nf2qM329fc00kAmm7vUVRgM
+4BqXnuFcAOuY68sgp9JArzK+EQ==
+-----END PRIVATE KEY-----
+-----BEGIN CERTIFICATE-----
+MIIDazCCAlOgAwIBAgIUYPOYXijLmMjjlgRCGHuZeyP0iPEwDQYJKoZIhvcNAQEL
+BQAwRTELMAkGA1UEBhMCREUxEzARBgNVBAgMClNvbWUtU3RhdGUxDTALBgNVBAoM
+BFRlc3QxEjAQBgNVBAMMCTEwLjAuMi41NTAeFw0yMDA1MTQxNDQ0MzlaFw00NzA5
+MzAxNDQ0MzlaMEUxCzAJBgNVBAYTAkRFMRMwEQYDVQQIDApTb21lLVN0YXRlMQ0w
+CwYDVQQKDARUZXN0MRIwEAYDVQQDDAkxMC4wLjIuNTUwggEiMA0GCSqGSIb3DQEB
+AQUAA4IBDwAwggEKAoIBAQC4KHUZjDRew89cwDlYPz9XFigcMDnDlHzdg2ByrGZI
+OUNYC5LH1QUK0TDbPP45Xx455niA0QY85dMQ4DQx0Qk6+TDpVD3F2MYQgbIX6YkX
+9kgqX+jiHgsNzRD4KamNYmfUY+dJhlZEXWAFuNSnRLvg4EH72AVKLLKiruGwkisW
+/AYU6dNE8iFOYL8Q75bBUADiQSDdD8vkpeXg1NqxNyHPR6YRbA+vqcK0kbC8btKR
+9wG6m99OhTR4x3M87vtFFLNtJNEf54fYxi+L1rljSqHbaXD+XJsVKgX+UlI1ZlYW
+4KqlMciMemkBp0CovCxLfsbMmkXAW2RONpkm+sdO3CXFAgMBAAGjUzBRMB0GA1Ud
+DgQWBBQvSHuosL/SDn/8sKl0dpyPeFvOfjAfBgNVHSMEGDAWgBQvSHuosL/SDn/8
+sKl0dpyPeFvOfjAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQBR
+sGYEuRwIU/tmAmTbniptItN9VE0NNj9QeKh+hKQ9cHvhxmlBlf5b7Vb2JaRZdy88
+kRIFKiNkyjgQVg+5KuEIcg17mHSal7zG+jIZ3c1bIpVCM4AjUe7EXl8LM4+dJ5sX
+Bwpd34tUk2edOiT8R/dU7uesxCdeIQ2FfvKyrXca73nj+UTvFGXUk/9mWY8KAaYc
+F/PWBhiZhJD4/dkUHJnrVtjpcqW2Io8bFmrMq2vfqQv+W2FZGCsHgXkAZO2E0jyQ
+5eOrwzgWRtMc5PvoGvqQfefseaLs0fvSQdcPqfv88Eqk5NGTOCIW8/KEsBwFJuwa
+EpA5DBBklj8UE2CdONvN
+-----END CERTIFICATE-----
+						</inline>
+					</dir>
+				</dir>
+				<dir name="website">
+					<inline name="index.html">
+<html>
+	<head>
+		<title>Hello</title>
+	</head>
+	<body>
+		<p>Hello Genode!</p>
+		<b>I am bold ;-)</b>
+	</body>
+</html>
+					</inline>
+				</dir>
+				<dir name="tmp"> <ram/> </dir>
+			</vfs>
+			<libc stdin="/dev/null" stdout="/dev/log" stderr="/dev/log"
+			      rtc="/dev/rtc" rng="/dev/random" socket="/socket"/>
+		</config>
+
+		<route>
+			<service name="Nic"> <child name="nic_router_slave"/> </service>
+			<any-service> <parent/> <any-child/> </any-service>
+		</route>
+
+	</start>
+
+	<start name="nic_bus">
+		<resource name="RAM" quantum="4M"/>
+		<provides>
+			<service name="Nic"/>
+		</provides>
+		<config>
+			<default-policy/>
+		</config>
+	</start>
+
+	<start name="rf_drv_1">
+		<binary name="rf_drv_dummy"/>
+		<resource name="RAM" quantum="8M"/>
+		<route>
+			<service name="Uplink"> <child name="nic_router_master"/> </service>
+			<service name="Nic">    <child name="nic_bus"/> </service>
+			<any-service> <parent/> <any-child/> </any-service>
+		</route>
+	</start>
+
+	<start name="rf_drv_2">
+		<binary name="rf_drv_dummy"/>
+		<resource name="RAM" quantum="8M"/>
+		<route>
+			<service name="Uplink"> <child name="nic_router_slave"/> </service>
+			<service name="Nic">    <child name="nic_bus"/> </service>
+			<any-service> <parent/> <any-child/> </any-service>
+		</route>
+	</start>
+</config>}
+
+install_config $config
+
+set boot_modules {
+	init
+	nic_router
+	rf_drv_dummy
+	nic_bus
+	ping
+}
+
+build_boot_image $boot_modules
+
+append qemu_args " -nographic "
+append_qemu_nic_args "hostfwd=tcp::5555-:80"
+
+run_genode_until forever
