@@ -1,0 +1,3 @@
+Driver component for the ad9361 (requires a corresponding bitstream).
+Forwards network packets from an Uplink_session to the FPGA and vice versa.
+Performs fragmentation/defragmentation on the go.
