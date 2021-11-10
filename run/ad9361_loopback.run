@@ -1,3 +1,4 @@
 set test_component "test/dmac_loopback"
 set binary_name "test-dmac_loopback"
+set loopback_mode "dmac"
 source ${genode_dir}/repos/zynq/run/ad9361.inc
