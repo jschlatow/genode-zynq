@@ -65,7 +65,7 @@ set config  {
 					<property name="spi-cpha" value="yes"/>
 				</device>
 				<device name="regif" type="regif">
-					<io_mem address="0x43c20000" size="0x10000"/>;
+					<io_mem address="0x43c20000" size="0x1000"/>;
 				</device>
 				<device name="zynq-gpio" type="zynq-gpio">
 					<io_mem address="0xe000a000" size="0x1000"/>;
@@ -103,7 +103,7 @@ append config {
 		<start name="ad9361">
 			<binary name="} $binary_name {"/>
 			<resource name="RAM" quantum="2M"/>
-			<config>
+			<config loopback="} $loopback_mode {">
 				<libc stdout="/dev/log" stderr="/dev/log"/>
 				<vfs>
 					<dir name="dev">
