@@ -197,3 +197,49 @@ and boot the updated image. Alternatively, you can include one of the power_on
 scripts in your RUN_OPT to automate the reset as well.
 
 
+AD9361-specific device drivers
+##############################
+
+In order to initalise the AD9361, it must be reset via GPIO and configured via SPI.
+Moreover, the axi_ad9361 IP core must be initialised as well.
+We therefore use the no-OS driver package from Analog Devices so that we adhere
+to the correct procedure. From the no-OS drivers, we bundled the corresponding
+subset that is necessary for the ad9361 and conveniently provide it as a C++ library
+called _ad9361_.
+
+Before you can build the library, you must prepare the no-OS port by executing:
+
+! ./tool/ports/prepare_port ad_noos
+
+The ad9361 library can then be used within Genode components by including
+'ad9361/ad9361.h'. All you need to do for initialisation is instantiating an
+'Ad::Ad9361' object and calling its 'apply_config()' method. The latter parses
+the provided config ROM to perform driver customisation. The options must be
+present as XML sub nodes below '<adi>', e.g.:
+
+! <config>
+!  <adi>
+!    <xo-disable-use-ext-refclk-enable value="yes"/>
+!    <one-rx-one-tx-mode-use-rx-num value="0x00"/>
+!    <rx-path-clock-frequencies>
+!      <field value="0x3a980000"/>
+!      <field value="0xea60000"/>
+!      <field value="0x7530000"/>
+!      <field value="0x3a98000"/>
+!      <field value="0x1d4c000"/>
+!      <field value="0x1d4c000"/>
+!    </rx-path-clock-frequencies>
+!  </adi>
+! </config>
+
+A list of available options can be found
+[https://wiki.analog.com/resources/tools-software/linux-drivers/iio-transceiver/ad9361-customization - here].
+You can also take reasonable values from an existing device tree file.
+
+Once the 'Ad::Ad9361' object was instantiated and configured, you can access
+the axi_dmac controllers via its 'rx()' and 'tx()' methods. The driver for the
+axi_dmac is found in 'include/drivers/dmac.h'.
+
+An example component and the corresponding run script can be found at
+'src/test/ad9361' and 'run/ad9361.run' respectively.
+
