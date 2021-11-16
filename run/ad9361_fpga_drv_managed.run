@@ -1,0 +1,95 @@
+#
+# Build
+#
+
+create_boot_directory
+
+import_from_depot [depot_user]/src/[base_src] \
+                  [depot_user]/pkg/drivers_fpga_managed-zynq
+
+
+# generic components
+set build_components {
+	core init timer
+	test/dmac_loopback
+}
+
+build $build_components
+
+
+#
+# Config
+#
+
+set config  {
+	<config verbose="no">
+		<parent-provides>
+			<service name="ROM"/>
+			<service name="PD"/>
+			<service name="CPU"/>
+			<service name="LOG"/>
+			<service name="IO_MEM"/>
+			<service name="IRQ"/>
+		</parent-provides>
+		<default-route>
+			<any-service> <parent/> <any-child/> </any-service>
+		</default-route>
+		<default caps="200"/>
+
+		<start name="timer">
+			<resource name="RAM" quantum="1M"/>
+			<provides><service name="Timer"/></provides>
+		</start>
+
+		<start name="fpga_drv" caps="1000" managing_system="yes">
+			<binary name="init"/>
+			<resource name="RAM" quantum="16M"/>
+			<provides>
+				<service name="ROM"/>
+				<service name="Platform"/>
+			</provides>
+			<route>
+				<service name="ROM" label="config">   <parent label="drivers.config"/> </service>
+				<service name="Timer">                <child  name="timer"/>           </service>
+				<any-service> <parent/> </any-service>
+			</route>
+		</start>
+
+		<start name="drivers" caps="1000">
+			<binary name="init"/>
+			<resource name="RAM" quantum="32M"/>
+			<route>
+				<service name="ROM" label="config"> <child name="fpga_drv"/> </service>
+				<service name="Timer">              <child name="timer"/>    </service>
+				<service name="Platform">           <child name="fpga_drv"/> </service>
+				<any-service> <parent/> </any-service>
+			</route>
+		</start>
+
+	</config>
+}
+
+install_config $config
+
+# copy config files
+foreach file [glob "[genode_dir]/repos/zynq/run/ad9361_fpga_drv_managed/*.config"] {
+	copy_file $file [run_dir]/genode/ }
+
+#
+# Boot modules
+#
+
+# generic modules
+set boot_modules {
+	core
+	init
+	timer
+	fpga.bit
+	test-dmac_loopback
+	libc.lib.so
+}
+build_boot_image $boot_modules
+
+append qemu_args " -nographic "
+run_genode_until forever
+
