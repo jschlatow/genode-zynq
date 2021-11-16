@@ -1,0 +1,11 @@
+<config>
+	<report devices="yes"/>
+	<policy label_prefix="drivers -> " info="yes">
+		<device name="axi-dmac-rx"/>
+		<device name="axi-dmac-tx"/>
+		<device name="axi-adc-rx"/>
+		<device name="axi-dac-tx"/>
+		<device name="gpio0"/>
+		<device name="spi0"/>
+	</policy>
+</config>

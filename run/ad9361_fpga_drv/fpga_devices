@@ -1,0 +1,16 @@
+<devices>
+	<device name="axi-dmac-rx" type="rx_dmac">
+		<io_mem address="0x7c400000" size="0x10000"/>;
+		<irq number="89"/>
+	</device>
+	<device name="axi-dmac-tx" type="tx_dmac">
+		<io_mem address="0x7c420000" size="0x10000"/>;
+		<irq number="88"/>
+	</device>
+	<device name="axi-adc-rx" type="cf-ad9361-lpc">
+		<io_mem address="0x79020000" size="0x4000"/>;
+	</device>
+	<device name="axi-dac-tx" type="cf-ad9361-dds-core-lpc">
+		<io_mem address="0x79024000" size="0x4000"/>;
+	</device>
+</devices>
