@@ -19,9 +19,12 @@
 extern "C" {
 /* contrib code checks __STDC_VERSION__ to determine whether to include stdbool */
 #define __STDC_VERSION__ 201112L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
 #include <ad9361_api.h>
 #include <axi_adc_core.h>
 #include <axi_dac_core.h>
+#pragma GCC diagnostic pop
 }
 
 /* static platform object */
@@ -370,8 +373,20 @@ struct Ad::Ad9361_config
 
 };
 
-void Ad::Ad9361::_update_init_params(Ad9361_config &cfg, Xml_node const & node)
+Ad::Ad9361_config &Ad::Ad9361::_ad9361_config()
 {
+	/**
+	 * To hide the implementation details from the header files, make
+	 * this static rather than a member.
+	 */
+	static Ad9361_config cfg;
+
+	return cfg;
+}
+
+void Ad::Ad9361::_update_init_params(Xml_node const & node)
+{
+	Ad9361_config &cfg = _ad9361_config();
 	AD9361_InitParam &p = cfg.default_init_param;
 
 	cfg.apply_value  (node, "digital-interface-tune-skip-mode",  p.digital_interface_tune_skip_mode);
@@ -485,91 +500,128 @@ void Ad::Ad9361::_update_init_params(Ad9361_config &cfg, Xml_node const & node)
 	cfg.apply_value  (node, "aux-dac2-tx-delay-us",              p.aux_dac2_tx_delay_us);
 }
 
-void Ad::Ad9361::apply_config(Xml_node const & config)
+void Ad::Ad9361::_restart_driver(Xml_node const & config)
 {
 	using Device = ::Platform::Device;
 
-	Libc::with_libc([&] () {
-		static Ad9361_config cfg;
+	enum { BUF_SIZE = 1500 };
 
-		/* set device addresses */
-		cfg.rx_adc_init.base = Ad::platform().addr_by_name(cfg.rx_adc_init.name);
-		cfg.tx_dac_init.base = Ad::platform().addr_by_name(cfg.tx_dac_init.name);
+	try {
+		/* construct dmac devices */
+		_dmac_rx.acquire(_env, _platform, BUF_SIZE);
+		_dmac_tx.acquire(_env, _platform, BUF_SIZE);
 
-		/* revert previous initialisation */
-		if (cfg.ad9361_phy) {
-			ad9361_remove(cfg.ad9361_phy);
-			cfg.ad9361_phy = 0;
-		}
-
-		/* update default_init_params from config */
-		config.with_sub_node("adi", [&] (Xml_node const & node) {
-			_update_init_params(cfg, node);
-		});
-
-		/* initialize ad9361 */
-		int32_t status = ad9361_init(&cfg.ad9361_phy, &cfg.default_init_param);
-		if (status < 0) {
-			error("ad9361_init() failed");
-			return;
-		}
-
-		/* TODO FIR config */
-
-		/* DAC init */
-		axi_dac_init(&cfg.ad9361_phy->tx_dac, &cfg.tx_dac_init);
-		axi_dac_set_datasel(cfg.ad9361_phy->tx_dac, -1, AXI_DAC_DATA_SEL_DMA);
-
-		/**
-		 * set loopback mode according to <config>
-		 */
-
-		Device regif_device { _platform, Device::Type { "regif" } };
-		Regif  regif        { regif_device };
-
-		String<32> loopback = config.attribute_value("loopback", String<32>(""));
-		if        (loopback == "dmac") {
-			log("Enabling DMA TX->RX loopback");
-			regif.enable_loopback();
-
-		} else if (loopback == "txrx") {
-			log("Enabling FPGA-internal TX->RX loopback");
-			regif.disable_loopback();
-			ad9361_bist_loopback(cfg.ad9361_phy, 0);
-
-			/* not implemented in no-OS */
-			struct axiadc_converter *conv   = cfg.ad9361_phy->adc_conv;
-			struct axi_adc          *rx_adc = cfg.ad9361_phy->rx_adc;
-			const uint32_t           addr   = 0x418;
-			for (int32_t chan = 0; chan < conv->chip_info->num_channels; chan++) {
-				uint32_t reg;
-				axi_adc_read(rx_adc, addr + (chan) * 0x40, &reg);
-				reg |= 0x1;
-				axi_adc_write(rx_adc, addr + (chan) * 0x40, reg);
-				warning("Writing ", Hex(reg), " to ", Hex(rx_adc->base + addr + (chan) * 0x40));
+		/* apply config */
+		Libc::with_libc([&] () {
+			Ad9361_config &cfg = _ad9361_config();
+	
+			/* set device addresses */
+			cfg.rx_adc_init.base = Ad::platform().addr_by_name(cfg.rx_adc_init.name);
+			cfg.tx_dac_init.base = Ad::platform().addr_by_name(cfg.tx_dac_init.name);
+	
+			/* revert previous initialisation */
+			if (cfg.ad9361_phy) {
+				ad9361_remove(cfg.ad9361_phy);
+				cfg.ad9361_phy = 0;
+			}
+	
+			/* update default_init_params from config */
+			config.with_sub_node("adi", [&] (Xml_node const & node) {
+				_update_init_params(node);
+			});
+	
+			/* initialize ad9361 */
+			int32_t status = ad9361_init(&cfg.ad9361_phy, &cfg.default_init_param);
+			if (status < 0) {
+				error("ad9361_init() failed");
+				_state = State::STOPPED;
+				return;
+			}
+	
+			/* TODO FIR config */
+	
+			/* DAC init */
+			axi_dac_init(&cfg.ad9361_phy->tx_dac, &cfg.tx_dac_init);
+			axi_dac_set_datasel(cfg.ad9361_phy->tx_dac, -1, AXI_DAC_DATA_SEL_DMA);
+	
+			/**
+			 * set loopback mode according to <config>
+			 */
+	
+			Device regif_device { _platform, Device::Type { "regif" } };
+			Regif  regif        { regif_device };
+	
+			String<32> loopback = config.attribute_value("loopback", String<32>(""));
+			if        (loopback == "dmac") {
+				log("Enabling DMA TX->RX loopback");
+				regif.enable_loopback();
+	
+			} else if (loopback == "txrx") {
+				log("Enabling FPGA-internal TX->RX loopback");
+				regif.disable_loopback();
+				ad9361_bist_loopback(cfg.ad9361_phy, 0);
+	
+				/* not implemented in no-OS */
+				struct axiadc_converter *conv   = cfg.ad9361_phy->adc_conv;
+				struct axi_adc          *rx_adc = cfg.ad9361_phy->rx_adc;
+				const uint32_t           addr   = 0x418;
+				for (int32_t chan = 0; chan < conv->chip_info->num_channels; chan++) {
+					uint32_t reg;
+					axi_adc_read(rx_adc, addr + (chan) * 0x40, &reg);
+					reg |= 0x1;
+					axi_adc_write(rx_adc, addr + (chan) * 0x40, reg);
+					warning("Writing ", Hex(reg), " to ", Hex(rx_adc->base + addr + (chan) * 0x40));
+				}
+	
+			} else if (loopback == "rxtx") {
+				log("Enabling FPGA-internal RX->TX loopback");
+				regif.disable_loopback();
+				ad9361_bist_loopback(cfg.ad9361_phy, 2);
+	
+			} else if (loopback == "rf") {
+				log("Enabling ad9361 TX->RX loopback");
+				regif.disable_loopback();
+				ad9361_bist_loopback(cfg.ad9361_phy, 1);
+	
+			} else {
+				/* disable all loopback options */
+				regif.disable_loopback();
+				ad9361_bist_loopback(cfg.ad9361_phy, 0);
 			}
 
-		} else if (loopback == "rxtx") {
-			log("Enabling FPGA-internal RX->TX loopback");
-			regif.disable_loopback();
-			ad9361_bist_loopback(cfg.ad9361_phy, 2);
+			_state = State::STARTED;
+		});
 
-		} else if (loopback == "rf") {
-			log("Enabling ad9361 TX->RX loopback");
-			regif.disable_loopback();
-			ad9361_bist_loopback(cfg.ad9361_phy, 1);
-
-		} else {
-			/* disable all loopback options */
-			regif.disable_loopback();
-			ad9361_bist_loopback(cfg.ad9361_phy, 0);
-		}
-
-
-	});
+	} catch (...) {
+		error("Unable to start driver");
+		_state = State::STOPPED;
+	}
 }
+
+
+Ad::Ad9361::State Ad::Ad9361::update_config(Xml_node const & config)
+{
+	/**
+	 * restart driver because the config changed
+	 */
+	_restart_driver(config);
+	return _state;
+}
+
+
+Ad::Ad9361::State Ad::Ad9361::update_devices(Xml_node const & config)
+{
+	/**
+	 * only try restarting driver if it was not started yet
+	 */
+	if (_state == State::STOPPED)
+		_restart_driver(config);
+
+	return _state;
+}
+
 
 Ad::Ad9361::Ad9361(Genode::Env &env)
 : _env(env),
-  _platform(Ad::platform(&env).platform)
+  _platform(Ad::platform(&env).platform())
 { }

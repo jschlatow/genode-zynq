@@ -329,9 +329,9 @@ class Ad::Axi_dmac : public Ad::Axi_dmac_base
 
 	public:
 
-		Axi_dmac(Env &env,
+		Axi_dmac(Platform::Device &device,
+		         Env &env,
 		         Platform::Connection &platform,
-		         Platform::Device &device,
 		         size_t max_transfer_len)
 		: Axi_dmac_base(env, platform, device, max_transfer_len),
 		 _irq(device)

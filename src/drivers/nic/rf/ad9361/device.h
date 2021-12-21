@@ -41,22 +41,24 @@ class Genode::Device : protected Ad::Ad9361
 
 		using Packet_writer = Rf::Packet_writer<PACKET_SIZE>;
 
-		Env              &_env;
-		Allocator        &_alloc;
-		Packet_writer     _packet_writer { };
+		Env                     &_env;
+		Allocator               &_alloc;
+		Packet_writer            _packet_writer { };
 
 	public:
 
+		using Ad::Ad9361::State;
+		using Ad::Ad9361::update_config;
+		using Ad::Ad9361::update_devices;
+
 		Device(Env                    &env,
-		       Allocator              &alloc,
-		       Attached_rom_dataspace &config)
+		       Allocator              &alloc)
 		: Ad::Ad9361(env),
 		  _env(env),
 		  _alloc(alloc)
-		{
-			/* init ad9361 */
-			apply_config(config.xml());
-		}
+		{ }
+
+		Platform::Connection & platform() { return _platform; }
 
 		void rx_sigh(Signal_context_capability cap)
 		{
