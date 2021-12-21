@@ -19,11 +19,11 @@
 
 #include <util/xml_node.h>
 #include <platform_session/device.h>
+#include <platform_session/volatile_device.h>
 #include <drivers/dmac.h>
 
 namespace Ad {
 	using namespace Genode;
-	using Device = Platform::Device;
 
 	struct Ad9361_config;
 	class Ad9361;
@@ -31,27 +31,55 @@ namespace Ad {
 
 class Ad::Ad9361
 {
-	private:
+	public:
+
+		enum State {
+			STOPPED,
+			STARTED
+		};
 
 	protected:
+		using Device = Platform::Device;
+		using Type   = Platform::Device::Type;
+
 		Genode::Env          &_env;
 		Platform::Connection &_platform;
+		State                _state      { STOPPED };
 
-		Device                _device_rx { _platform, Device::Type { "rx_dmac" } };
-		Ad::Axi_dmac_rx       _dmac_rx   { _env, _platform, _device_rx, 1500 };
-		Device                _device_tx { _platform, Device::Type { "tx_dmac" } };
-		Ad::Axi_dmac_tx       _dmac_tx   { _env, _platform, _device_tx, 1500 };
+		Platform::Volatile_driver<Ad::Axi_dmac_rx, Type> _dmac_rx { _platform, Type { "rx_dmac" } };
+		Platform::Volatile_driver<Ad::Axi_dmac_tx, Type> _dmac_tx { _platform, Type { "tx_dmac" } };
 
-		void _update_init_params(Ad9361_config &cfg, Xml_node const &);
+		void _update_init_params(Xml_node const &);
+
+		/* accessor to static Ad9361_config object to hide implementation */
+		Ad9361_config &_ad9361_config();
+
+		void _restart_driver(Xml_node const & config);
 
 	public:
 
 		Ad9361(Genode::Env &env);
 
-		void apply_config(Xml_node const & config);
+		/**
+		 * (Re)start driver, acquiring devices and applying the provided config.
+		 *
+		 * Returns driver state
+		 */
+		State update_config(Xml_node const & config);
 
-		Ad::Axi_dmac_tx & tx() { return _dmac_tx; }
-		Ad::Axi_dmac_rx & rx() { return _dmac_rx; }
+		/**
+		 * Refresh device availability.
+		 *
+		 * If driver is started and devices are missing, driver will be stopped.
+		 * If driver is stopped and devices are available, try starting the
+		 * driver.
+		 *
+		 * Returns driver state
+		 */
+		State update_devices(Xml_node const & config);
+
+		Ad::Axi_dmac_tx & tx() { return _dmac_tx.driver(); }
+		Ad::Axi_dmac_rx & rx() { return _dmac_rx.driver(); }
 };
 
 #endif /* _INCLUDE__AD9361__AD9361_H_ */

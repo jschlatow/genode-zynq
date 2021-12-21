@@ -15,7 +15,6 @@
 #include <libc/component.h>
 #include <base/attached_rom_dataspace.h>
 #include <timer_session/connection.h>
-#include <base/attached_rom_dataspace.h>
 
 #include <ad9361/ad9361.h>
 
@@ -31,14 +30,16 @@ enum {
 struct Main : Ad::Ad9361
 {
 
-	Attached_rom_dataspace        config      { _env, "config" };
-	Timer::Connection             timer       { _env };
-	Signal_handler<Main>          irq_handler { _env.ep(), *this, &Main::handle_irq };
+	Attached_rom_dataspace        config          { _env, "config" };
+	Timer::Connection             timer           { _env };
+	Signal_handler<Main>          irq_handler     { _env.ep(), *this, &Main::handle_irq };
+	Signal_handler<Main>          config_handler  { _env.ep(), *this, &Main::handle_config };
+	Signal_handler<Main>          devices_handler { _env.ep(), *this, &Main::handle_devices };
 
 	unsigned                      cnt_recv    { 0 };
 	unsigned                      cnt_sent    { 0 };
 	unsigned                      cnt_lost    { 0 };
-	unsigned long                 start_ts    { 0 };
+	unsigned long long            start_ts    { 0 };
 
 	void send_more()
 	{
@@ -48,7 +49,7 @@ struct Main : Ad::Ad9361
 		while (!done && cnt_sent <= MESSAGES_PER_RUN) {
 			Result res = tx().write_transfer([&] (void *ptr, size_t max_size) {
 				size_t size = min(max_size, (size_t)MESSAGE_SIZE);
-				memset(ptr, cnt_sent, size);
+				memset(ptr, (unsigned char)cnt_sent, size);
 				reinterpret_cast<unsigned*>(ptr)[0] = cnt_sent++;
 				return size;
 			});
@@ -103,11 +104,9 @@ struct Main : Ad::Ad9361
 		rx().irq_ack();
 	};
 
-	Main(Genode::Env &env)
-	: Ad::Ad9361(env)
+	void start_driver()
 	{
-		/* init ad9361 */
-		apply_config(config.xml());
+		log("starting loopback");
 
 		/* register and enable RX irq handling */
 		rx().irq_sigh(irq_handler);
@@ -116,6 +115,41 @@ struct Main : Ad::Ad9361
 
 		start_ts = timer.elapsed_ms();
 		send_more();
+	}
+
+	void handle_config()
+	{
+		config.update();
+
+		/* config change always implies a driver restart */
+		update_config(config.xml());
+		if (_state == State::STARTED)
+			start_driver();
+	}
+
+	void handle_devices()
+	{
+		_platform.update();
+
+		State old_state = _state;
+		State new_state = update_devices(config.xml());
+
+		if (old_state != new_state)
+			if (new_state == State::STARTED)
+				start_driver();
+	}
+
+	Main(Genode::Env &env)
+	: Ad::Ad9361(env)
+	{
+		/* init ad9361 */
+		if (update_config(config.xml()) == State::STARTED)
+			start_driver();
+		else
+			warning("waiting for devices to become available");
+
+		config.sigh(config_handler);
+		_platform.sigh(devices_handler);
 	}
 
 };

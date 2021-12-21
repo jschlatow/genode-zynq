@@ -29,13 +29,17 @@ namespace Rf {
 struct Rf::Main
 {
 	Env                          &env;
-	Heap                          heap          { env.ram(), env.rm() };
+	Heap                          heap            { env.ram(), env.rm() };
 
-	Attached_rom_dataspace        config_rom    { env, "config" };
-	Device                        device        { env, heap, config_rom };
-	Constructible<Uplink_client>  uplink_client { };
+	Attached_rom_dataspace        config_rom      { env, "config" };
+	Device                        device          { env, heap };
+	Constructible<Uplink_client>  uplink_client   { };
 
-	Main(Env &env) : env(env)
+	Signal_handler<Main>          config_handler  { env.ep(), *this, &Main::handle_config };
+	Signal_handler<Main>          devices_handler { env.ep(), *this, &Main::handle_devices };
+	Device::State                 state           { Device::State::STOPPED };
+
+	Net::Mac_address mac_address()
 	{
 		/* read MAC address from config */
 		Net::Mac_address mac_addr { };
@@ -47,7 +51,52 @@ struct Rf::Main
 			env.parent().exit(-1);
 		}
 
-		uplink_client.construct(env, heap, device, mac_addr);
+		return mac_addr;
+	}
+
+	void update_state(Device::State new_state)
+	{
+		if (new_state == state)
+			return;
+
+		switch (new_state)
+		{
+			case Device::State::STOPPED:
+				uplink_client.destruct();
+				break;
+			case Device::State::STARTED:
+				uplink_client.construct(env, heap, device, mac_address());
+				break;
+		}
+
+		state = new_state;
+	}
+
+	void handle_config()
+	{
+		config_rom.update();
+
+		Device::State new_state = device.update_config(config_rom.xml());
+		update_state(new_state);
+	}
+
+	void handle_devices()
+	{
+		device.platform().update();
+
+		Device::State new_state = device.update_devices(config_rom.xml());
+		update_state(new_state);
+	}
+
+	Main(Env &env) : env(env)
+	{
+		Device::State new_state = device.update_config(config_rom.xml());
+		update_state(new_state);
+		if (new_state != Device::State::STARTED)
+			warning("waiting for devices to become available");
+
+		config_rom.sigh(config_handler);
+		device.platform().sigh(devices_handler);
 	}
 };
 

@@ -16,13 +16,14 @@
 
 #include <base/env.h>
 #include <base/heap.h>
+#include <base/registry.h>
 #include <platform_session/connection.h>
 #include <platform_session/device.h>
 #include <drivers/gpio.h>
 #include <drivers/spi.h>
 
 namespace Ad {
-	struct Platform;
+	class Platform;
 	struct Attached_device;
 
 	using Device = ::Platform::Device;
@@ -33,68 +34,69 @@ namespace Ad {
 	Platform & platform(Genode::Env * env = nullptr);
 }
 
-struct Ad::Attached_device : Genode::List<Ad::Attached_device>::Element
+struct Ad::Attached_device : Genode::Registry<Ad::Attached_device>::Element
 {
 	Device::Type      type;
 	Device            device;
 	Device::Mmio      mmio;
 
-	Attached_device(::Platform::Connection & platform,
-	                Device::Type             name)
-	: type(name),
+	Attached_device(::Platform::Connection            & platform,
+	                Device::Type                        name,
+	                Genode::Registry<Attached_device> & registry)
+	: Genode::Registry<Attached_device>::Element(registry, *this),
+	  type(name),
 	  device(platform, type),
 	  mmio(device)
-	{ list()->insert(this); }
-
-	static Genode::List<Ad::Attached_device> *list()
-	{
-		static Genode::List<Ad::Attached_device> _list;
-		return &_list;
-	}
+	{ }
 };
 
-struct Ad::Platform
+class Ad::Platform
 {
-	Genode::Env                  &env;
-	::Platform::Connection       platform  { env };
-	Genode::Heap                 heap      { env.ram(), env.rm() };
-	Device                       gpiodev   { platform, Device::Type { "zynq-gpio" } };
-	Gpio::Zynq_regs              gpio      { gpiodev };
-	Spi::Zynq_driver             spi       { platform, Device::Type { "zynq-spi" } };
+	private:
+		typedef ::Platform::Volatile_driver<Gpio::Zynq_regs,Device::Type>   Gpio_driver;
+		typedef Spi::Zynq_driver                                            Spi_driver;
 
-	Platform(Genode::Env & env) : env(env) { }
+		Genode::Env                      &_env;
+		::Platform::Connection            _platform  { _env };
+		Genode::Heap                      _heap      { _env.ram(), _env.rm() };
+		Gpio_driver                       _gpio      { _platform, Device::Type { "zynq-gpio" } };
+		Spi_driver                        _spi       { _platform, Device::Type { "zynq-spi" } };
 
-	unsigned long addr_by_name(const char * name)
-	{
-		Device::Type  type { name };
-		unsigned long addr { 0 };
+		Genode::Registry<Attached_device> _devices   { };
 
-		/* find device among attached devices */
-		with_device(type, [&] (Attached_device &dev) {
-			addr = reinterpret_cast<unsigned long>(dev.mmio.local_addr<unsigned long>());
-		});
+	public:
 
-		if (addr)
-			return addr;
+		Platform(Genode::Env & env) : _env(env) { }
 
-		/* attach device if not found above */
-		Attached_device *dev = new (heap) Attached_device(platform, type);
-		return reinterpret_cast<unsigned long>(dev->mmio.local_addr<unsigned long>());
-	}
-
-	template <typename FUNC>
-	void with_device(Device::Type const & type, FUNC && f)
-	{
-		for (Attached_device *dev = Attached_device::list()->first();
-		     dev;
-		     dev = dev->next())
+		unsigned long addr_by_name(const char * name)
 		{
-			if (dev->type.name == type.name) {
-				f(*dev);
-				break;
-			}
+			Device::Type  type { name };
+			unsigned long addr { 0 };
+
+			/* find device among attached devices */
+			_devices.for_each([&] (Attached_device &dev) {
+				if (dev.type.name == type.name)
+					addr = reinterpret_cast<unsigned long>(dev.mmio.local_addr<unsigned long>());
+			});
+
+			if (addr)
+				return addr;
+
+			/* attach device if not found above */
+			Attached_device *dev = new (_heap) Attached_device(_platform, type, _devices);
+			return reinterpret_cast<unsigned long>(dev->mmio.local_addr<unsigned long>());
 		}
-	}
+
+		::Platform::Connection &platform() { return _platform; };
+		Spi_driver             &spi()      { return _spi; }
+
+		Gpio_driver::Driver    &gpio()
+		{
+			if (!_gpio.available())
+				_gpio.acquire();
+
+			return _gpio.driver();
+		}
 };
 
 #endif /* _SRC__LIB__AD_NOOS__PLATFORM_H_ */

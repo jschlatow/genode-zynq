@@ -11,6 +11,8 @@
  * under the terms of the GNU Affero General Public License version 3.
  */
 
+#include <base/log.h>
+
 #include "platform.h"
 #include "error.h"
 
@@ -43,17 +45,30 @@ int32_t axi_io_read(uint32_t base, uint32_t offset, uint32_t * value)
 extern "C"
 void genode_gpio_direction(unsigned pin, bool input)
 {
-	Ad::platform().gpio.direction(pin, input);
+	try {
+		Ad::platform().gpio().direction(pin, input);
+	} catch (...) {
+		error("GPIO device access failed");
+	}
 }
 
 extern "C"
 void genode_gpio_write(unsigned pin, unsigned value)
 {
-	Ad::platform().gpio.set_output_pin(pin, value);
+	try {
+		Ad::platform().gpio().set_output_pin(pin, value);
+	} catch (...) {
+		error("GPIO device access failed");
+	}
 }
 
 extern "C"
 unsigned genode_spi_transfer(unsigned char *buf, unsigned bytes)
 {
-	return Ad::platform().spi.write_and_read(buf, bytes);
+	try {
+		return Ad::platform().spi().write_and_read(buf, bytes);
+	} catch (...) {
+		error("SPI device access failed");
+	}
+	return 0;
 }
