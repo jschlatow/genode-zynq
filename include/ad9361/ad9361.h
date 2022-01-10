@@ -80,6 +80,9 @@ class Ad::Ad9361
 
 		Ad::Axi_dmac_tx & tx() { return _dmac_tx.driver(); }
 		Ad::Axi_dmac_rx & rx() { return _dmac_rx.driver(); }
+
+		void rx_config(unsigned bw_hz, unsigned fs_hz, unsigned lo_hz);
+		void tx_config(unsigned bw_hz, unsigned fs_hz, unsigned lo_hz);
 };
 
 #endif /* _INCLUDE__AD9361__AD9361_H_ */
