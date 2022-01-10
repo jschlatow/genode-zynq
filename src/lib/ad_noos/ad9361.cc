@@ -621,6 +621,50 @@ Ad::Ad9361::State Ad::Ad9361::update_devices(Xml_node const & config)
 }
 
 
+void Ad::Ad9361::rx_config(unsigned bandwidth_hz, unsigned sampling_hz, unsigned lo_hz)
+{
+	ad9361_rf_phy *phy = _ad9361_config().ad9361_phy;
+
+	/* set port to A_BALANCED (0) */
+	if (ad9361_set_rx_rf_port_input(phy, 0))
+		error("Unable to set rx port to A_BALANCED");
+
+	/* set bandwidth */
+	if (ad9361_set_rx_rf_bandwidth(phy, bandwidth_hz))
+		error("Unable to set rx bandwidth to ", bandwidth_hz, "Hz");
+
+	/* set sampling frequency */
+	if (ad9361_set_rx_sampling_freq(phy, sampling_hz))
+		error("Unable to set rx sampling frequenzy to ", sampling_hz, "Hz");
+
+	/* set local oscillator frequency */
+	if (ad9361_set_rx_lo_freq(phy, lo_hz))
+		error("Unable to set rx local oscillator frequenzy to ", lo_hz, "Hz");
+}
+
+
+void Ad::Ad9361::tx_config(unsigned bandwidth_hz, unsigned sampling_hz, unsigned lo_hz)
+{
+	ad9361_rf_phy *phy = _ad9361_config().ad9361_phy;
+
+	/* set port to TXA (0) */
+	if (ad9361_set_tx_rf_port_output(phy, 0))
+		error("Unable to set tx port to A");
+
+	/* set bandwidth */
+	if (ad9361_set_tx_rf_bandwidth(phy, bandwidth_hz))
+		error("Unable to set tx bandwidth to ", bandwidth_hz, "Hz");
+
+	/* set sampling frequency */
+	if (ad9361_set_tx_sampling_freq(phy, sampling_hz))
+		error("Unable to set tx sampling frequenzy to ", sampling_hz, "Hz");
+
+	/* set local oscillator frequency */
+	if (ad9361_set_tx_lo_freq(phy, lo_hz))
+		error("Unable to set tx local oscillator frequenzy to ", lo_hz, "Hz");
+}
+
+
 Ad::Ad9361::Ad9361(Genode::Env &env)
 : _env(env),
   _platform(Ad::platform(&env).platform())
