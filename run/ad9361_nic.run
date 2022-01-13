@@ -121,7 +121,7 @@ set config  {
 append config {
 		<start name="rf_drv">
 			<resource name="RAM" quantum="8M"/>
-			<config loopback="dmac" mac="02:00:00:00:00:01">
+			<config mac="02:00:00:00:00:01">
 				<libc stdout="/dev/log" stderr="/dev/log"/>
 				<vfs>
 					<dir name="dev">
