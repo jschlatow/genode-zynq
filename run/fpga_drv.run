@@ -109,9 +109,6 @@ set config  {
 						<has_value input="loaded" value="yes"/>
 						<then>
 <inline>
-	<device name="regif" type="regif">
-		<io_mem address="0x43c20000" size="0x1000"/>;
-	</device>
 	<device name="axi-dmac-rx" type="rx_dmac">
 		<io_mem address="0x7c400000" size="0x10000"/>;
 		<irq number="89"/>

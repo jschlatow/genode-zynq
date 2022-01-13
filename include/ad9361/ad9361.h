@@ -38,6 +38,13 @@ class Ad::Ad9361
 			STARTED
 		};
 
+		enum Loopback_mode {
+			NONE,             /* no loopback */
+			TXRX,             /* FGPA-internal TX -> RX loopback */
+			RXTX,             /* FPGA-internal RX -> TX loopback */
+			RF                /* TX -> RX loopback on rf side */
+		};
+
 	protected:
 		using Device = Platform::Device;
 		using Type   = Platform::Device::Type;
@@ -83,6 +90,8 @@ class Ad::Ad9361
 
 		void rx_config(unsigned bw_hz, unsigned fs_hz, unsigned lo_hz);
 		void tx_config(unsigned bw_hz, unsigned fs_hz, unsigned lo_hz);
+
+		void loopback_mode(Loopback_mode mode);
 };
 
 #endif /* _INCLUDE__AD9361__AD9361_H_ */

@@ -30,9 +30,6 @@ extern "C" {
 /* static platform object */
 #include "platform.h"
 
-/* custom register interface */
-#include "regif.h"
-
 extern const struct gpio_platform_ops genode_gpio_ops;
 extern const struct spi_platform_ops  genode_spi_ops;
 
@@ -502,8 +499,6 @@ void Ad::Ad9361::_update_init_params(Xml_node const & node)
 
 void Ad::Ad9361::_restart_driver(Xml_node const & config)
 {
-	using Device = ::Platform::Device;
-
 	enum { BUF_SIZE = 1500 };
 
 	try {
@@ -543,24 +538,29 @@ void Ad::Ad9361::_restart_driver(Xml_node const & config)
 			/* DAC init */
 			axi_dac_init(&cfg.ad9361_phy->tx_dac, &cfg.tx_dac_init);
 			axi_dac_set_datasel(cfg.ad9361_phy->tx_dac, -1, AXI_DAC_DATA_SEL_DMA);
-	
-			/**
-			 * set loopback mode according to <config>
-			 */
-	
-			Device regif_device { _platform, Device::Type { "regif" } };
-			Regif  regif        { regif_device };
-	
-			String<32> loopback = config.attribute_value("loopback", String<32>(""));
-			if        (loopback == "dmac") {
-				log("Enabling DMA TX->RX loopback");
-				regif.enable_loopback();
-	
-			} else if (loopback == "txrx") {
-				log("Enabling FPGA-internal TX->RX loopback");
-				regif.disable_loopback();
-				ad9361_bist_loopback(cfg.ad9361_phy, 0);
-	
+
+			_state = State::STARTED;
+		});
+
+	} catch (...) {
+		error("Unable to start driver");
+		_state = State::STOPPED;
+	}
+}
+
+
+void Ad::Ad9361::loopback_mode(Loopback_mode mode)
+{
+	Libc::with_libc([&] () {
+		Ad9361_config &cfg = _ad9361_config();
+
+		switch (mode) {
+		case NONE:
+			ad9361_bist_loopback(cfg.ad9361_phy, 0);
+			break;
+		case TXRX:
+			ad9361_bist_loopback(cfg.ad9361_phy, 0);
+			{
 				/* not implemented in no-OS */
 				struct axiadc_converter *conv   = cfg.ad9361_phy->adc_conv;
 				struct axi_adc          *rx_adc = cfg.ad9361_phy->rx_adc;
@@ -572,32 +572,17 @@ void Ad::Ad9361::_restart_driver(Xml_node const & config)
 					axi_adc_write(rx_adc, addr + (chan) * 0x40, reg);
 					warning("Writing ", Hex(reg), " to ", Hex(rx_adc->base + addr + (chan) * 0x40));
 				}
-	
-			} else if (loopback == "rxtx") {
-				log("Enabling FPGA-internal RX->TX loopback");
-				regif.disable_loopback();
-				ad9361_bist_loopback(cfg.ad9361_phy, 2);
-	
-			} else if (loopback == "rf") {
-				log("Enabling ad9361 TX->RX loopback");
-				regif.disable_loopback();
-				ad9361_bist_loopback(cfg.ad9361_phy, 1);
-	
-			} else {
-				/* disable all loopback options */
-				regif.disable_loopback();
-				ad9361_bist_loopback(cfg.ad9361_phy, 0);
 			}
-
-			_state = State::STARTED;
-		});
-
-	} catch (...) {
-		error("Unable to start driver");
-		_state = State::STOPPED;
-	}
+			break;
+		case RXTX:
+			ad9361_bist_loopback(cfg.ad9361_phy, 2);
+			break;
+		case RF:
+			ad9361_bist_loopback(cfg.ad9361_phy, 1);
+			break;
+		}
+	});
 }
-
 
 Ad::Ad9361::State Ad::Ad9361::update_config(Xml_node const & config)
 {

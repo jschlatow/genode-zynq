@@ -57,7 +57,7 @@ set config  {
 
 		<start name="test-dmac_loopback">
 			<resource name="RAM" quantum="2M"/>
-			<config loopback="dmac">
+			<config>
 				<libc stdout="/dev/log" stderr="/dev/log"/>
 				<vfs>
 					<dir name="dev">
