@@ -75,6 +75,11 @@ class Ad::Ad9361
 		State update_config(Xml_node const & config);
 
 		/**
+		 * Allocate and initialise RX/TX buffers.
+		 */
+		void allocate_buffers(size_t rx_bytes, size_t tx_bytes);
+
+		/**
 		 * Refresh device availability.
 		 *
 		 * If driver is started and devices are missing, driver will be stopped.

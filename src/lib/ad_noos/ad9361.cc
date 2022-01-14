@@ -499,13 +499,7 @@ void Ad::Ad9361::_update_init_params(Xml_node const & node)
 
 void Ad::Ad9361::_restart_driver(Xml_node const & config)
 {
-	enum { BUF_SIZE = 1500 };
-
 	try {
-		/* construct dmac devices */
-		_dmac_rx.acquire(_env, _platform, BUF_SIZE);
-		_dmac_tx.acquire(_env, _platform, BUF_SIZE);
-
 		/* apply config */
 		Libc::with_libc([&] () {
 			Ad9361_config &cfg = _ad9361_config();
@@ -647,6 +641,14 @@ void Ad::Ad9361::tx_config(unsigned bandwidth_hz, unsigned sampling_hz, unsigned
 	/* set local oscillator frequency */
 	if (ad9361_set_tx_lo_freq(phy, lo_hz))
 		error("Unable to set tx local oscillator frequenzy to ", lo_hz, "Hz");
+}
+
+
+void Ad::Ad9361::allocate_buffers(size_t rx_bytes, size_t tx_bytes)
+{
+	/* construct dmac devices */
+	_dmac_rx.acquire(_env, _platform, rx_bytes);
+	_dmac_tx.acquire(_env, _platform, tx_bytes);
 }
 
 

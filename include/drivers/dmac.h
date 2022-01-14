@@ -21,6 +21,7 @@
 #define _INCLUDE__DRIVERS__DMAC_H_
 
 #include <util/bit_array.h>
+#include <util/lazy_array.h>
 #include <platform_session/device.h>
 
 namespace Ad {
@@ -45,6 +46,11 @@ class Ad::Axi_dmac_base : public Platform::Device::Mmio
 		struct Buffer_exceeded     : Exception { };
 
 	protected:
+
+		enum {
+			/* transfers must not cross 4kB boundary, empiracally this value seems safe */
+			MAX_TRANSFER_LEN = 0xF00
+		};
 
 		/**
 		 * Registers
@@ -183,51 +189,29 @@ class Ad::Axi_dmac_base : public Platform::Device::Mmio
 				{ platform.free_dma_buffer(ds_cap); }
 		};
 
+		typedef Genode::Lazy_array<Dma_buffer, Transfer_id::MAX_TRANSFER_ID+1> Dma_buffer_array;
+
 		/**
 		 * Member
 		 */
-		Dma_buffer            _buffers[Transfer_id::MAX_TRANSFER_ID+1];
+		Dma_buffer_array      _buffers       { };
 		bool                  _read_support  { true };
 		bool                  _write_support { true };
 
 		Axi_dmac_base(Genode::Env          &env,
 		              Platform::Connection &platform,
 		              Platform::Device     &device,
-		              size_t max_transfer_len)
+		              size_t                max_transfer_len)
 		: Platform::Device::Mmio(device),
-		  _buffers{{ max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform },
-		           { max_transfer_len, env, platform }}
+		  _buffers(Transfer_id::MAX_TRANSFER_ID+1,
+		           min(max_transfer_len,(unsigned)MAX_TRANSFER_LEN),
+		           env, platform)
 		{
-			log("Initialising AXI DMAC device at ", Hex((unsigned)local_addr<unsigned>()));
+			log("Initialising AXI DMAC device with ", max_transfer_len, "Byte buffers");
+
+			if (max_transfer_len > MAX_TRANSFER_LEN)
+				warning("Limiting RX DMA buffer size to ", (unsigned)MAX_TRANSFER_LEN,
+				        "bytes, because ", max_transfer_len, " likely exceeds 4kB bounary");
 
 			if (read<Identification::Value>() != Identification::Value::DMAC) {
 				error("AXI DMAC identification failed");
@@ -249,6 +233,9 @@ class Ad::Axi_dmac_base : public Platform::Device::Mmio
 				_write_support = read<Interface::Dma_type_src>() == Interface::MEMORY_MAP;
 			}
 		}
+
+		Dma_buffer &_buffer_for_id(unsigned id) {
+			return _buffers.value(id % _buffers.count()); }
 
 	public:
 
@@ -290,9 +277,11 @@ class Ad::Axi_dmac : public Ad::Axi_dmac_base
 				throw Device_error();
 
 			/* get corresponding DMA buffer */
-			Dma_buffer &buf = _buffers[next_id];
+			Dma_buffer &buf = _buffer_for_id(next_id);
 
-			if (bytes > buf.capacity)
+			if (bytes == 0)
+				bytes = buf.capacity;
+			else if (bytes > buf.capacity)
 				throw Buffer_exceeded();
 
 			if (!buf.used) {
@@ -368,7 +357,7 @@ class Ad::Axi_dmac : public Ad::Axi_dmac_base
 				return DEVICE_ERROR;
 
 			/* get corresponding DMA buffer */
-			Dma_buffer &buf = _buffers[next_id];
+			Dma_buffer &buf = _buffer_for_id(next_id);
 
 			/* check whether transfer is still ongoing */
 			buf.used = buf.used ? !(read<Regs::Transfer_done>(next_id)) : false;
@@ -460,7 +449,8 @@ class Ad::Axi_dmac : public Ad::Axi_dmac_base
 				size_t id = (i + _next_recv_transfer) % (Regs::Transfer_id::MAX_TRANSFER_ID + 1);
 
 				if (done.get(id, 1))
-					if (Dma_buffer &buf = _buffers[id]; buf.used) {
+					if (Dma_buffer &buf = _buffer_for_id(id); buf.used) {
+
 						/* call user handler */
 						read_from_buf(buf.ptr, buf.size);
 
@@ -478,7 +468,7 @@ class Ad::Axi_dmac : public Ad::Axi_dmac_base
 			 * refill queue with read transfers re-using the initially set
 			 * size of the first buffer
 			 */
-			_fill_read_transfers(_buffers[0].size);
+			_fill_read_transfers(_buffer_for_id(0).size);
 
 			return recv_cnt;
 		}
@@ -506,10 +496,19 @@ class Ad::Axi_dmac : public Ad::Axi_dmac_base
 		/**
 		 * Enable rx by placing read transfers into the queue.
 		 */
-		void enable_rx(size_t transfer_bytes)
+		void enable_rx(size_t transfer_bytes=0)
 		{
 			if (!read_support())
 				throw Read_not_supported();
+
+			/* abort all transfers */
+			disable();
+			enable();
+
+			/* reset buffer state */
+			_buffers.for_each([&] (unsigned, Dma_buffer &buf) {
+				buf.used = false;
+			});
 
 			enable_irq();
 
