@@ -62,6 +62,8 @@ class Genode::Device : protected Ad::Ad9361
 
 		void rx_sigh(Signal_context_capability cap)
 		{
+			allocate_buffers(MESSAGE_SIZE, MESSAGE_SIZE);
+
 			/* register and enable RX irq handling */
 			rx().irq_sigh(cap);
 			rx().irq_ack();

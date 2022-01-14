@@ -108,6 +108,8 @@ struct Main : Ad::Ad9361
 	{
 		log("starting loopback");
 
+		allocate_buffers(MESSAGE_SIZE, MESSAGE_SIZE);
+
 		/* register and enable RX irq handling */
 		rx().irq_sigh(irq_handler);
 		rx().irq_ack();
