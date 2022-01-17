@@ -194,24 +194,27 @@ class Ad::Axi_dmac_base : public Platform::Device::Mmio
 		/**
 		 * Member
 		 */
-		Dma_buffer_array      _buffers       { };
-		bool                  _read_support  { true };
-		bool                  _write_support { true };
+		Dma_buffer_array      _buffers         { };
+		bool                  _read_support    { true };
+		bool                  _write_support   { true };
+		size_t                _transfer_offset { 0 };
+		size_t                _transfer_len;
 
 		Axi_dmac_base(Genode::Env          &env,
 		              Platform::Connection &platform,
 		              Platform::Device     &device,
-		              size_t                max_transfer_len)
+		              size_t                transfer_len)
 		: Platform::Device::Mmio(device),
 		  _buffers(Transfer_id::MAX_TRANSFER_ID+1,
-		           min(max_transfer_len,(unsigned)MAX_TRANSFER_LEN),
-		           env, platform)
+		           min(transfer_len,(unsigned)MAX_TRANSFER_LEN),
+		           env, platform),
+		  _transfer_len(transfer_len)
 		{
-			log("Initialising AXI DMAC device with ", max_transfer_len, "Byte buffers");
+			log("Initialising AXI DMAC device for (virtual) transfers of ", _transfer_len, " Bytes");
 
-			if (max_transfer_len > MAX_TRANSFER_LEN)
+			if (_transfer_len > MAX_TRANSFER_LEN)
 				warning("Limiting RX DMA buffer size to ", (unsigned)MAX_TRANSFER_LEN,
-				        "bytes, because ", max_transfer_len, " likely exceeds 4kB bounary");
+				        "bytes, because ", _transfer_len, " likely exceeds 4kB bounary");
 
 			if (read<Identification::Value>() != Identification::Value::DMAC) {
 				error("AXI DMAC identification failed");
@@ -268,7 +271,19 @@ class Ad::Axi_dmac : public Ad::Axi_dmac_base
 		Platform::Device::Irq _irq;
 		unsigned              _next_recv_transfer { 0 };
 
-		Dma_buffer & _enqueue_read_transfer(size_t bytes)
+		size_t _next_transfer_len(size_t max_len)
+		{
+			size_t next_len = min(_transfer_len-_transfer_offset, max_len);
+
+			if (_transfer_offset + next_len >= _transfer_len)
+				_transfer_offset = 0;
+			else
+				_transfer_offset += next_len;
+
+			return next_len;
+		}
+
+		Dma_buffer & _enqueue_read_transfer()
 		{
 			/* determine next transfer ID */
 			unsigned const next_id = read<Regs::Transfer_id::Next>();
@@ -279,13 +294,8 @@ class Ad::Axi_dmac : public Ad::Axi_dmac_base
 			/* get corresponding DMA buffer */
 			Dma_buffer &buf = _buffer_for_id(next_id);
 
-			if (bytes == 0)
-				bytes = buf.capacity;
-			else if (bytes > buf.capacity)
-				throw Buffer_exceeded();
-
 			if (!buf.used) {
-				buf.size = bytes;
+				buf.size = _next_transfer_len(buf.capacity);
 
 				write<Regs::Transfer_len::Bytes>(buf.size-1);
 				write<Regs::Transfer_dst::Address>(buf.dma_addr);
@@ -300,11 +310,11 @@ class Ad::Axi_dmac : public Ad::Axi_dmac_base
 		/**
 		 * Fill queue with read transfers
 		 */
-		void _fill_read_transfers(size_t bytes)
+		void _fill_read_transfers()
 		{
 			try {
 				while (!read<Regs::Transfer_submit::Queue>()) {
-					Dma_buffer &buf = _enqueue_read_transfer(bytes);
+					Dma_buffer &buf = _enqueue_read_transfer();
 					if (buf.used)
 						break;
 					
@@ -318,11 +328,20 @@ class Ad::Axi_dmac : public Ad::Axi_dmac_base
 
 	public:
 
+		/**
+		 * Constructor
+		 *
+		 * \param device        platform device
+		 * \param env           env
+		 * \param platform      platform connection
+		 * \param transfer_len  virtual length of a single transfer, is split into
+		 *                      multiple transfers if necessary
+		 */
 		Axi_dmac(Platform::Device &device,
 		         Env &env,
 		         Platform::Connection &platform,
-		         size_t max_transfer_len)
-		: Axi_dmac_base(env, platform, device, max_transfer_len),
+		         size_t transfer_len)
+		: Axi_dmac_base(env, platform, device, transfer_len),
 		 _irq(device)
 		{
 			if (READ_SUPPORT && !_read_support)
@@ -398,7 +417,9 @@ class Ad::Axi_dmac : public Ad::Axi_dmac_base
 			if (!read_support())
 				return NOT_SUPPORTED;
 
-			Dma_buffer &buf = _enqueue_read_transfer(bytes);
+			_transfer_len = bytes;
+			_transfer_offset = 0;
+			Dma_buffer &buf = _enqueue_read_transfer();
 
 			/* sanity check if called when with irq handling enabled */
 			if (buf.used)
@@ -465,10 +486,9 @@ class Ad::Axi_dmac : public Ad::Axi_dmac_base
 				_next_recv_transfer = last_received + 1;
 
 			/**
-			 * refill queue with read transfers re-using the initially set
-			 * size of the first buffer
+			 * refill queue with read transfers
 			 */
-			_fill_read_transfers(_buffer_for_id(0).size);
+			_fill_read_transfers();
 
 			return recv_cnt;
 		}
@@ -495,6 +515,9 @@ class Ad::Axi_dmac : public Ad::Axi_dmac_base
 
 		/**
 		 * Enable rx by placing read transfers into the queue.
+		 *
+		 * \param transfer_bytes  length of a single transfer. If 0, the default
+		 *                        (virtual) transfer length is used.
 		 */
 		void enable_rx(size_t transfer_bytes=0)
 		{
@@ -512,7 +535,12 @@ class Ad::Axi_dmac : public Ad::Axi_dmac_base
 
 			enable_irq();
 
-			_fill_read_transfers(transfer_bytes);
+			if (transfer_bytes > 0) {
+				_transfer_len = transfer_bytes;
+				_transfer_offset = 0;
+			}
+
+			_fill_read_transfers();
 		}
 
 		/**
