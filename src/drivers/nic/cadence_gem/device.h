@@ -449,13 +449,11 @@ class Cadence_gem::Device
 
 		template <typename RX,
 		          typename TX,
-		          typename RECEIVE_PKT,
-		          typename HANDLE_ACKS,
-		          typename TRANSMIT_PKT>
+		          typename RECEIVE_PKTS,
+		          typename TRANSMIT_PKTS>
 		void handle_irq(RX &rx, TX &tx,
-		                RECEIVE_PKT  && receive_pkt,
-		                HANDLE_ACKS  && handle_acks,
-		                TRANSMIT_PKT && transmit_pkt)
+		                RECEIVE_PKTS  && receive_pkts,
+		                TRANSMIT_PKTS && transmit_pkts)
 		{
 			/* 16.3.9 Receiving Frames */
 			/* read interrupt status, to detect the interrupt reason */
@@ -464,12 +462,7 @@ class Cadence_gem::Device
 			const Tx_status::access_t txStatus = read<Tx_status>();
 
 			if ( Interrupt_status::Rx_complete::get(status) ) {
-
-				while (rx.next_packet()) {
-
-					handle_acks();
-					receive_pkt(rx.get_packet_descriptor());
-				}
+				receive_pkts();
 
 				/* reset receive complete interrupt */
 				write<Rx_status>(Rx_status::Frame_received::bits(1));
@@ -484,7 +477,7 @@ class Cadence_gem::Device
 				write<Interrupt_status>(Interrupt_status::Tx_complete::bits(1));
 				
 				/* continue sending */
-				transmit_pkt();
+				transmit_pkts();
 			}
 
 			/* handle Rx/Tx errors */

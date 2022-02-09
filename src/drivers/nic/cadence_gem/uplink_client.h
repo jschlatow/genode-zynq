@@ -42,32 +42,31 @@ class Cadence_gem::Uplink_client : public Uplink_client_base
 		Constructible<Rx_buffer>               _rx_buffer        { };
 		Device                                &_device;
 
-		bool _send()
+		void _transmit_acks() {
+			_tx_buffer->submit_acks(); }
+
+		void _send()
 		{
-			/* first, see whether we can acknowledge any
-			 * previously sent packet */
-			_tx_buffer->submit_acks();
+			while (true) {
+				if (!_conn->rx()->ready_to_ack())
+					break;
 
-			if (!_conn->rx()->ready_to_ack())
-				return false;
+				if (!_conn->rx()->packet_avail())
+					break;
 
-			if (!_conn->rx()->packet_avail())
-				return false;
+				if (!_tx_buffer->ready_to_submit())
+					break;
 
-			if (!_tx_buffer->ready_to_submit())
-				return false;
+				Packet_descriptor packet = _conn->rx()->get_packet();
+				if (!packet.size()) {
+					Genode::warning("Invalid tx packet");
+					continue;
+				}
 
-			Packet_descriptor packet = _conn->rx()->get_packet();
-			if (!packet.size()) {
-				Genode::warning("Invalid tx packet");
-				return true;
+				_tx_buffer->add_to_queue(packet);
+
+				_device.transmit_start();
 			}
-
-			_tx_buffer->add_to_queue(packet);
-
-			_device.transmit_start();
-
-			return true;
 		}
 
 		void _handle_acks()
@@ -78,6 +77,31 @@ class Cadence_gem::Uplink_client : public Uplink_client_base
 			}
 		}
 
+		void _recv()
+		{
+			while (true) {
+				if (!_conn->tx()->ready_to_submit()) {
+					error("Not ready to submit received packet to uplink.");
+					break;
+				}
+
+				if (!_rx_buffer->next_packet())
+					break;
+
+				Nic::Packet_descriptor pkt = _rx_buffer->get_packet_descriptor();
+
+				if (!_conn->tx()->packet_valid(pkt)) {
+					error("invalid packet descriptor ", Hex(pkt.offset()),
+					      " size ", Hex(pkt.size()));
+					continue;
+				}
+
+				_conn->tx()->try_submit_packet(pkt);
+			}
+
+			_conn->tx()->wakeup();
+		}
+
 		void _handle_irq()
 		{
 			if (!_conn.constructed()) {
@@ -85,23 +109,18 @@ class Cadence_gem::Uplink_client : public Uplink_client_base
 				class No_connection { };
 				throw No_connection { };
 			}
+
+			_handle_acks();
+			_transmit_acks();
+
 			_device.handle_irq(*_rx_buffer, *_tx_buffer,
-				[&] (Nic::Packet_descriptor pkt)
-				{
-					if (_conn->tx()->packet_valid(pkt)) {
-						/* submit packet */
-						_conn->tx()->submit_packet(pkt);
-					}
-					else
-						error(
-							"invalid packet descriptor ", Hex(pkt.offset()),
-							" size ", Hex(pkt.size()));
-					},
-				[&] () { _handle_acks(); },
-				[&] () { while(_send()); }
-			);
+				[&] () { _recv(); },
+				[&] () { _send(); });
 
 			_device.irq_ack();
+
+			/* wakeup if acks have been transmitted */
+			_conn->rx()->wakeup();
 		}
 
 
@@ -113,12 +132,17 @@ class Cadence_gem::Uplink_client : public Uplink_client_base
 		{
 			_handle_acks();
 
-			while (_send());
+			_transmit_acks();
+			_send();
+
+			/* wakeup if acks have been transmitted */
+			_conn->rx()->wakeup();
 		}
 
 		void _custom_conn_tx_handle_ack_avail() override
 		{
 			_handle_acks();
+			/* also indicates ready_to_submit, but we rather wait for an IRQ */
 		}
 
 		bool _custom_conn_rx_packet_avail_handler() override
