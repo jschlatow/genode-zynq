@@ -1,0 +1,7 @@
+LICENSE   := GPLv2
+VERSION   := xilinx-v2021.2
+DOWNLOADS := zynq_linux.archive
+
+URL(zynq_linux) := https://github.com/Xilinx/linux-xlnx/archive/refs/tags/$(VERSION).tar.gz
+SHA(zynq_linux) := af0dd4aa240292024b091fd78582dcf93aeeb32c9854184a1b4ec3b7cc284f62
+DIR(zynq_linux) := src/linux
