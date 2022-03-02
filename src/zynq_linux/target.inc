@@ -1,38 +1,38 @@
 #
 # Linux kernel configuration
 #
-# This is not a truly minimal configuration. Just slimmed down a bit.
-#
 
-# demodularise kernel
-LX_DISABLE += MODULES
+# kernel fundamentals
+LX_ENABLE += TTY SERIAL_EARLYCON SERIAL_OF_PLATFORM PRINTK HAS_IOMEM
 
-# slim down kernel by removing obviously unneeded features
-LX_DISABLE += SWAP CROSS_MEMORY_ATTACH GENERIC_IRQ_MIGRATION GENERIC_MSI_IRQ \
-              GENERIC_MSI_IRQ_DOMAIN SCHED_THERMAL_PRESSURE CGROUPS KALLSYMS \
-              RSEQ PERF_EVENTS VM_EVENT_COUNTERS COMPAT_BRK MCPM BIG_LITTLE \
-              BL_SWITCHER HOTPLUG_CPU HW_PERF_EVENTS ARM_MODULE_PLTS \
-              STACKPROTECTOR_PER_TASK CPU_FREQ SUSPEND PM SECCOMP GCC_PLUGINS \
-              FREEZER BLK_SCSI_REQUEST BLK_PM BLK_MQ_PCI BLK_MQ_VIRTIO \
-              BLK_SCSI_REQUEST FRAME_VECTOR ETHTOOL_NETLINK DEBUG_MISC RCU_TRACE \
-              MEDIA_SUPPORT MEDIA_CEC_SUPPORT VIRTIO_MENU VHOST_MENU TRACE_CLOCK
+# target fundamentals
+LX_ENABLE += MMU CPU_V7 ARCH_ZYNQ SERIAL_XILINX_PS_UART
 
-# slim down kernel by removing superfluous drivers
-LX_DISABLE += IPV6 CAN WIRELESS WLAN PCI MTD_NAND_PL353 SCSI SCSI_MOD \
-              USB_NET_DRIVERS INPUT_LEDS INPUT_MOUSE MOUSE_PS2 PMBUS THERMAL \
-              DRM HDMI SOUND SND HID USB_SUPPORT UIO IOMMU_SUPPORT \
-              EXTCON IIO MEMORY RESET_CONTROLLER \
-              DMADEVICES RAS RESET_ZYNQ MISC_FILESYSTEMS NETWORK_FILESYSTEMS \
-              CRYPTO_HW FONTS NEW_LEDS LEDS_CLASS
+# ARM errata
+LX_ENABLE += PL310_ERRATA_588369 \
+             PL310_ERRATA_72791 \
+             PL310_ERRATA_753970 \
+             PL310_ERRATA_769419 \
+             ARM_ERRATA_643719 \
+             ARM_ERRATA_720789 \
+             ARM_ERRATA_754322 \
+             ARM_ERRATA_754327 \
+             ARM_ERRATA_764369 \
+             ARM_ERRATA_775420
 
-LX_DISABLE += $(addprefix NET_VENDOR_, ALACRITECH AMAZON AQUANTIA AURORA ARC \
-                                       BROADCOM CAVIUM CORTINA EZCHIP GOOGLE \
-                                       HISILICON HUAWEI I825XX INTEL MARVELL \
-                                       MELLANOX \
-                                       MICREL MICROCHIP MICROSEMI NATSEMI \
-                                       NETRONOME NI PENSANDO QUALCOMM \
+# subsystems
+LX_ENABLE += NET NETDEVICES MACB MMC MMC_SDHCI MMC_SDHCI_PLTFM MMC_SDHCI_OF_ARASAN
+
+
+# disable network drivers
+LX_DISABLE += $(addprefix NET_VENDOR_, ALACRITECH AMAZON AQUANTIA ARC \
+                                       BROADCOM CAVIUM CIRRUS CORTINA EZCHIP \
+                                       FARADAY GOOGLE HISILICON HUAWEI I825XX \
+                                       INTEL MARVELL MICROSOFT MICREL \
+                                       MICROCHIP MICROSEMI NATSEMI \
+                                       NETRONOME NI 8390 PENSANDO QUALCOMM \
                                        RENESAS ROCKER SAMSUNG SOLARFLARE \
-                                       SOCIONEXT SYNOPSYS XILINX)
+                                       SMSC SOCIONEXT STMICRO SYNOPSYS VIA \
+                                       WIZNET XILINX)
 
-# remove superfluous RD compression support
-LX_DISABLE += RD_BZIP2 RD_LZMA RD_XZ RD_LZO RD_LZ4 RD_ZSTD
+LX_DISABLE += WLAN
