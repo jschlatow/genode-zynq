@@ -56,6 +56,7 @@ struct Zynq::L2_cache : Hw::Pl310
 	{
 		Aux::access_t aux = 0;
 		Aux::Full_line_of_zero::set(aux, true);
+		Aux::Force_write_alloc::set(aux, Aux::Force_write_alloc::NO_ALLOC);
 		Aux::Associativity::set(aux, Aux::Associativity::WAY_8);
 		Aux::Way_size::set(aux, Aux::Way_size::KB_64);
 		Aux::Share_override::set(aux, true);
@@ -65,6 +66,12 @@ struct Zynq::L2_cache : Hw::Pl310
 		Aux::Inst_prefetch::set(aux, true);
 		Aux::Early_bresp::set(aux, true);
 		write<Aux>(aux);
+
+		Prefetch_ctrl::access_t prefetch = 0;
+		Prefetch_ctrl::Data_prefetch::set(prefetch, 1);
+		Prefetch_ctrl::Inst_prefetch::set(prefetch, 1);
+		Prefetch_ctrl::Double_linefill::set(prefetch, true);
+		write<Prefetch_ctrl>(prefetch | 0x10);
 
 		write<Tag_ram>(Tag_ram::Setup_latency::bits(1)
 		             | Tag_ram::Write_latency::bits(1)
