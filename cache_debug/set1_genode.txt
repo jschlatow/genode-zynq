@@ -1,0 +1,130 @@
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 19
+stalled cycles due to DTLB miss: 620
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 0
+stalled cycles due to DTLB miss: 210
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 0
+stalled cycles due to DTLB miss: 508
+8KB (Cycles/KB): 864 | 293 | 320
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 0
+stalled cycles due to DTLB miss: 265
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 0
+stalled cycles due to DTLB miss: 310
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 1
+stalled cycles due to DTLB miss: 298
+16KB (Cycles/KB): 844 | 290 | 300
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 44
+stalled cycles due to DTLB miss: 396
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 63
+stalled cycles due to DTLB miss: 458
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 32
+stalled cycles due to DTLB miss: 313
+32KB (Cycles/KB): 883 | 296 | 308
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 71
+stalled cycles due to DTLB miss: 571
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 24
+stalled cycles due to DTLB miss: 487
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 27
+stalled cycles due to DTLB miss: 543
+64KB (Cycles/KB): 1457 | 746 | 753
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 110
+stalled cycles due to DTLB miss: 338
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 83
+stalled cycles due to DTLB miss: 424
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 69
+stalled cycles due to DTLB miss: 546
+128KB (Cycles/KB): 1577 | 854 | 863
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 190
+stalled cycles due to DTLB miss: 760
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 130
+stalled cycles due to DTLB miss: 475
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 65
+stalled cycles due to DTLB miss: 1021
+256KB (Cycles/KB): 1591 | 863 | 879
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 1093
+stalled cycles due to DTLB miss: 1190
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 781
+stalled cycles due to DTLB miss: 791
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 267
+stalled cycles due to DTLB miss: 1029
+512KB (Cycles/KB): 1611 | 872 | 919
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 3868
+stalled cycles due to DTLB miss: 4294
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 2966
+stalled cycles due to DTLB miss: 1586
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 880
+stalled cycles due to DTLB miss: 1511
+1024KB (Cycles/KB): 2341 | 1980 | 1890
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 7620
+stalled cycles due to DTLB miss: 5430
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 6634
+stalled cycles due to DTLB miss: 2368
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 1882
+stalled cycles due to DTLB miss: 3322
+2048KB (Cycles/KB): 2490 | 2199 | 2089
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 15588
+stalled cycles due to DTLB miss: 4818
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 13838
+stalled cycles due to DTLB miss: 2433
+prefetch linefills: 0
+prefetch hits: 0
+stalled cycles due to write: 3397
+stalled cycles due to DTLB miss: 3563
+4096KB (Cycles/KB): 2504 | 2217 | 2185

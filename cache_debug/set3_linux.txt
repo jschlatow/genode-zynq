@@ -1,0 +1,130 @@
+coherent linefill miss: 372
+coherent linefill hit: 22
+external IRQs: 1263
+load store: 423316
+coherent linefill miss: 126
+coherent linefill hit: 1
+external IRQs: 196
+load store: 16029
+coherent linefill miss: 361
+coherent linefill hit: 6
+external IRQs: 121
+load store: 15954
+8KB (nsec/KB): 1957 | 403 | 417
+coherent linefill miss: 526
+coherent linefill hit: 14
+external IRQs: 19
+load store: 819070
+coherent linefill miss: 86
+coherent linefill hit: 5
+external IRQs: 12
+load store: 21904
+coherent linefill miss: 161
+coherent linefill hit: 8
+external IRQs: 157
+load store: 22415
+16KB (nsec/KB): 1946 | 390 | 394
+coherent linefill miss: 27018
+coherent linefill hit: 144
+external IRQs: 111
+load store: 1409107
+coherent linefill miss: 25665
+coherent linefill hit: 15
+external IRQs: 25
+load store: 40375
+coherent linefill miss: 360
+coherent linefill hit: 13
+external IRQs: 226
+load store: 39317
+32KB (nsec/KB): 2342 | 577 | 391
+coherent linefill miss: 168510
+coherent linefill hit: 194
+external IRQs: 373
+load store: 2511061
+coherent linefill miss: 167581
+coherent linefill hit: 21
+external IRQs: 200
+load store: 83953
+coherent linefill miss: 421
+coherent linefill hit: 17
+external IRQs: 309
+load store: 70501
+64KB (nsec/KB): 3187 | 960 | 390
+coherent linefill miss: 404542
+coherent linefill hit: 460
+external IRQs: 1014
+load store: 4744969
+coherent linefill miss: 403679
+coherent linefill hit: 107
+external IRQs: 465
+load store: 168298
+coherent linefill miss: 596
+coherent linefill hit: 94
+external IRQs: 915
+load store: 136366
+128KB (nsec/KB): 3468 | 1083 | 393
+coherent linefill miss: 820391
+coherent linefill hit: 783
+external IRQs: 2767
+load store: 7511821
+coherent linefill miss: 819049
+coherent linefill hit: 245
+external IRQs: 969
+load store: 330567
+coherent linefill miss: 925
+coherent linefill hit: 172
+external IRQs: 3292
+load store: 266684
+256KB (nsec/KB): 3495 | 1096 | 394
+coherent linefill miss: 1641556
+coherent linefill hit: 1500
+external IRQs: 36321
+load store: 14827355
+coherent linefill miss: 1639286
+coherent linefill hit: 494
+external IRQs: 30213
+load store: 641832
+coherent linefill miss: 1042
+coherent linefill hit: 126
+external IRQs: 130336
+load store: 519046
+512KB (nsec/KB): 3542 | 1157 | 397
+coherent linefill miss: 3290782
+coherent linefill hit: 3467
+external IRQs: 539784
+load store: 32599367
+coherent linefill miss: 3287527
+coherent linefill hit: 1564
+external IRQs: 553438
+load store: 1093873
+coherent linefill miss: 1694
+coherent linefill hit: 209
+external IRQs: 272842
+load store: 1030320
+1024KB (nsec/KB): 4006 | 1944 | 451
+coherent linefill miss: 6582459
+coherent linefill hit: 7052
+external IRQs: 1213919
+load store: 71313685
+coherent linefill miss: 6576315
+coherent linefill hit: 3322
+external IRQs: 1208161
+load store: 2062400
+coherent linefill miss: 3380
+coherent linefill hit: 340
+external IRQs: 571410
+load store: 2051714
+2048KB (nsec/KB): 4088 | 2034 | 480
+coherent linefill miss: 13165307
+coherent linefill hit: 13790
+external IRQs: 2484319
+load store: 148269854
+coherent linefill miss: 13152012
+coherent linefill hit: 6624
+external IRQs: 2408220
+load store: 4121033
+coherent linefill miss: 16124
+coherent linefill hit: 998
+external IRQs: 1661352
+load store: 4094148
+4096KB (nsec/KB): 4093 | 2044 | 485

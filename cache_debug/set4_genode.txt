@@ -1,0 +1,130 @@
+[init -> test-cache] ITLB alloc: 9
+[init -> test-cache] DTLB alloc: 42
+[init -> test-cache] stalled cycles ITLB: 387
+[init -> test-cache] stalled cycles micro DTLB: 735
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 7
+[init -> test-cache] stalled cycles ITLB: 98
+[init -> test-cache] stalled cycles micro DTLB: 513
+[init -> test-cache] ITLB alloc: 6
+[init -> test-cache] DTLB alloc: 29
+[init -> test-cache] stalled cycles ITLB: 371
+[init -> test-cache] stalled cycles micro DTLB: 668
+[init -> test-cache] 8KB (Cycles/KB): 864 | 291 | 319
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 4
+[init -> test-cache] stalled cycles ITLB: 169
+[init -> test-cache] stalled cycles micro DTLB: 528
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 4
+[init -> test-cache] stalled cycles ITLB: 69
+[init -> test-cache] stalled cycles micro DTLB: 491
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 5
+[init -> test-cache] stalled cycles ITLB: 129
+[init -> test-cache] stalled cycles micro DTLB: 496
+[init -> test-cache] 16KB (Cycles/KB): 844 | 290 | 300
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 3
+[init -> test-cache] stalled cycles ITLB: 158
+[init -> test-cache] stalled cycles micro DTLB: 465
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 5
+[init -> test-cache] stalled cycles ITLB: 182
+[init -> test-cache] stalled cycles micro DTLB: 495
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 8
+[init -> test-cache] stalled cycles ITLB: 344
+[init -> test-cache] stalled cycles micro DTLB: 466
+[init -> test-cache] 32KB (Cycles/KB): 883 | 295 | 307
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 6
+[init -> test-cache] stalled cycles ITLB: 170
+[init -> test-cache] stalled cycles micro DTLB: 494
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 5
+[init -> test-cache] stalled cycles ITLB: 95
+[init -> test-cache] stalled cycles micro DTLB: 515
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 11
+[init -> test-cache] stalled cycles ITLB: 212
+[init -> test-cache] stalled cycles micro DTLB: 503
+[init -> test-cache] 64KB (Cycles/KB): 1456 | 746 | 753
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 3
+[init -> test-cache] stalled cycles ITLB: 94
+[init -> test-cache] stalled cycles micro DTLB: 471
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 4
+[init -> test-cache] stalled cycles ITLB: 173
+[init -> test-cache] stalled cycles micro DTLB: 602
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 6
+[init -> test-cache] stalled cycles ITLB: 274
+[init -> test-cache] stalled cycles micro DTLB: 597
+[init -> test-cache] 128KB (Cycles/KB): 1578 | 853 | 862
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 4
+[init -> test-cache] stalled cycles ITLB: 347
+[init -> test-cache] stalled cycles micro DTLB: 478
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 7
+[init -> test-cache] stalled cycles ITLB: 224
+[init -> test-cache] stalled cycles micro DTLB: 508
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 7
+[init -> test-cache] stalled cycles ITLB: 100
+[init -> test-cache] stalled cycles micro DTLB: 551
+[init -> test-cache] 256KB (Cycles/KB): 1591 | 864 | 879
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 4
+[init -> test-cache] stalled cycles ITLB: 490
+[init -> test-cache] stalled cycles micro DTLB: 517
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 6
+[init -> test-cache] stalled cycles ITLB: 351
+[init -> test-cache] stalled cycles micro DTLB: 498
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 6
+[init -> test-cache] stalled cycles ITLB: 350
+[init -> test-cache] stalled cycles micro DTLB: 531
+[init -> test-cache] 512KB (Cycles/KB): 1612 | 872 | 920
+[init -> test-cache] ITLB alloc: 4
+[init -> test-cache] DTLB alloc: 29
+[init -> test-cache] stalled cycles ITLB: 1744
+[init -> test-cache] stalled cycles micro DTLB: 750
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 6
+[init -> test-cache] stalled cycles ITLB: 402
+[init -> test-cache] stalled cycles micro DTLB: 478
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 4
+[init -> test-cache] stalled cycles ITLB: 526
+[init -> test-cache] stalled cycles micro DTLB: 511
+[init -> test-cache] 1024KB (Cycles/KB): 2339 | 1978 | 1882
+[init -> test-cache] ITLB alloc: 5
+[init -> test-cache] DTLB alloc: 27
+[init -> test-cache] stalled cycles ITLB: 966
+[init -> test-cache] stalled cycles micro DTLB: 820
+[init -> test-cache] ITLB alloc: 0
+[init -> test-cache] DTLB alloc: 7
+[init -> test-cache] stalled cycles ITLB: 549
+[init -> test-cache] stalled cycles micro DTLB: 522
+[init -> test-cache] ITLB alloc: 3
+[init -> test-cache] DTLB alloc: 33
+[init -> test-cache] stalled cycles ITLB: 853
+[init -> test-cache] stalled cycles micro DTLB: 825
+[init -> test-cache] 2048KB (Cycles/KB): 2491 | 2199 | 2089
+[init -> test-cache] ITLB alloc: 4
+[init -> test-cache] DTLB alloc: 34
+[init -> test-cache] stalled cycles ITLB: 1336
+[init -> test-cache] stalled cycles micro DTLB: 835
+[init -> test-cache] ITLB alloc: 1
+[init -> test-cache] DTLB alloc: 13
+[init -> test-cache] stalled cycles ITLB: 402
+[init -> test-cache] stalled cycles micro DTLB: 652
+[init -> test-cache] ITLB alloc: 6
+[init -> test-cache] DTLB alloc: 45
+[init -> test-cache] stalled cycles ITLB: 1086
+[init -> test-cache] stalled cycles micro DTLB: 972
+[init -> test-cache] 4096KB (Cycles/KB): 2504 | 2217 | 2180

@@ -1,0 +1,130 @@
+[init -> test-cache] coherent linefill miss: 307
+[init -> test-cache] coherent linefill hit: 17
+[init -> test-cache] external IRQs: 505
+[init -> test-cache] load store: 401648
+[init -> test-cache] coherent linefill miss: 36
+[init -> test-cache] coherent linefill hit: 10
+[init -> test-cache] external IRQs: 137
+[init -> test-cache] load store: 145756
+[init -> test-cache] coherent linefill miss: 320
+[init -> test-cache] coherent linefill hit: 13
+[init -> test-cache] external IRQs: 444
+[init -> test-cache] load store: 147929
+[init -> test-cache] 8KB (Cycles/KB): 866 | 291 | 319
+[init -> test-cache] coherent linefill miss: 426
+[init -> test-cache] coherent linefill hit: 9
+[init -> test-cache] external IRQs: 285
+[init -> test-cache] load store: 702062
+[init -> test-cache] coherent linefill miss: 94
+[init -> test-cache] coherent linefill hit: 7
+[init -> test-cache] external IRQs: 258
+[init -> test-cache] load store: 194587
+[init -> test-cache] coherent linefill miss: 505
+[init -> test-cache] coherent linefill hit: 12
+[init -> test-cache] external IRQs: 242
+[init -> test-cache] load store: 195768
+[init -> test-cache] 16KB (Cycles/KB): 843 | 290 | 300
+[init -> test-cache] coherent linefill miss: 2150
+[init -> test-cache] coherent linefill hit: 13
+[init -> test-cache] external IRQs: 417
+[init -> test-cache] load store: 1288285
+[init -> test-cache] coherent linefill miss: 1233
+[init -> test-cache] coherent linefill hit: 13
+[init -> test-cache] external IRQs: 216
+[init -> test-cache] load store: 295380
+[init -> test-cache] coherent linefill miss: 2506
+[init -> test-cache] coherent linefill hit: 13
+[init -> test-cache] external IRQs: 414
+[init -> test-cache] load store: 295147
+[init -> test-cache] 32KB (Cycles/KB): 878 | 294 | 306
+[init -> test-cache] coherent linefill miss: 169191
+[init -> test-cache] coherent linefill hit: 28
+[init -> test-cache] external IRQs: 461
+[init -> test-cache] load store: 2595970
+[init -> test-cache] coherent linefill miss: 168700
+[init -> test-cache] coherent linefill hit: 17
+[init -> test-cache] external IRQs: 316
+[init -> test-cache] load store: 482029
+[init -> test-cache] coherent linefill miss: 169266
+[init -> test-cache] coherent linefill hit: 18
+[init -> test-cache] external IRQs: 558
+[init -> test-cache] load store: 481613
+[init -> test-cache] 64KB (Cycles/KB): 1456 | 746 | 753
+[init -> test-cache] coherent linefill miss: 404131
+[init -> test-cache] coherent linefill hit: 53
+[init -> test-cache] external IRQs: 576
+[init -> test-cache] load store: 5194622
+[init -> test-cache] coherent linefill miss: 403654
+[init -> test-cache] coherent linefill hit: 33
+[init -> test-cache] external IRQs: 452
+[init -> test-cache] load store: 891024
+[init -> test-cache] coherent linefill miss: 404281
+[init -> test-cache] coherent linefill hit: 29
+[init -> test-cache] external IRQs: 550
+[init -> test-cache] load store: 892540
+[init -> test-cache] 128KB (Cycles/KB): 1579 | 853 | 862
+[init -> test-cache] coherent linefill miss: 819383
+[init -> test-cache] coherent linefill hit: 98
+[init -> test-cache] external IRQs: 500
+[init -> test-cache] load store: 10338247
+[init -> test-cache] coherent linefill miss: 818828
+[init -> test-cache] coherent linefill hit: 55
+[init -> test-cache] external IRQs: 288
+[init -> test-cache] load store: 1711341
+[init -> test-cache] coherent linefill miss: 819418
+[init -> test-cache] coherent linefill hit: 69
+[init -> test-cache] external IRQs: 433
+[init -> test-cache] load store: 1712072
+[init -> test-cache] 256KB (Cycles/KB): 1590 | 864 | 879
+[init -> test-cache] coherent linefill miss: 1638916
+[init -> test-cache] coherent linefill hit: 183
+[init -> test-cache] external IRQs: 1006
+[init -> test-cache] load store: 20562086
+[init -> test-cache] coherent linefill miss: 1638270
+[init -> test-cache] coherent linefill hit: 108
+[init -> test-cache] external IRQs: 717
+[init -> test-cache] load store: 3350151
+[init -> test-cache] coherent linefill miss: 1638842
+[init -> test-cache] coherent linefill hit: 107
+[init -> test-cache] external IRQs: 552
+[init -> test-cache] load store: 3351262
+[init -> test-cache] 512KB (Cycles/KB): 1612 | 872 | 918
+[init -> test-cache] coherent linefill miss: 3278166
+[init -> test-cache] coherent linefill hit: 500
+[init -> test-cache] external IRQs: 4652
+[init -> test-cache] load store: 40614518
+[init -> test-cache] coherent linefill miss: 3277403
+[init -> test-cache] coherent linefill hit: 409
+[init -> test-cache] external IRQs: 1267
+[init -> test-cache] load store: 6632183
+[init -> test-cache] coherent linefill miss: 3277984
+[init -> test-cache] coherent linefill hit: 392
+[init -> test-cache] external IRQs: 1394
+[init -> test-cache] load store: 6633851
+[init -> test-cache] 1024KB (Cycles/KB): 2338 | 1973 | 1871
+[init -> test-cache] coherent linefill miss: 6556243
+[init -> test-cache] coherent linefill hit: 1025
+[init -> test-cache] external IRQs: 5628
+[init -> test-cache] load store: 83186117
+[init -> test-cache] coherent linefill miss: 6555424
+[init -> test-cache] coherent linefill hit: 920
+[init -> test-cache] external IRQs: 1567
+[init -> test-cache] load store: 13196582
+[init -> test-cache] coherent linefill miss: 6556129
+[init -> test-cache] coherent linefill hit: 872
+[init -> test-cache] external IRQs: 2569
+[init -> test-cache] load store: 13195328
+[init -> test-cache] 2048KB (Cycles/KB): 2490 | 2190 | 2073
+[init -> test-cache] coherent linefill miss: 13112220
+[init -> test-cache] coherent linefill hit: 2026
+[init -> test-cache] external IRQs: 5612
+[init -> test-cache] load store: 171194616
+[init -> test-cache] coherent linefill miss: 13111081
+[init -> test-cache] coherent linefill hit: 1785
+[init -> test-cache] external IRQs: 2582
+[init -> test-cache] load store: 26320305
+[init -> test-cache] coherent linefill miss: 13112128
+[init -> test-cache] coherent linefill hit: 1788
+[init -> test-cache] external IRQs: 3347
+[init -> test-cache] load store: 26317455
+[init -> test-cache] 4096KB (Cycles/KB): 2504 | 2208 | 2162

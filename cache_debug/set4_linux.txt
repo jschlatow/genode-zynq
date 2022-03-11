@@ -1,0 +1,130 @@
+ITLB alloc: 5
+DTLB alloc: 27
+stalled cycles ITLB: 588
+stalled cycles micro DTLB: 895
+ITLB alloc: 3
+DTLB alloc: 11
+stalled cycles ITLB: 51
+stalled cycles micro DTLB: 387
+ITLB alloc: 0
+DTLB alloc: 6
+stalled cycles ITLB: 5
+stalled cycles micro DTLB: 398
+8KB (nsec/KB): 1960 | 405 | 417
+ITLB alloc: 1
+DTLB alloc: 8
+stalled cycles ITLB: 141
+stalled cycles micro DTLB: 520
+ITLB alloc: 0
+DTLB alloc: 0
+stalled cycles ITLB: 0
+stalled cycles micro DTLB: 338
+ITLB alloc: 0
+DTLB alloc: 3
+stalled cycles ITLB: 53
+stalled cycles micro DTLB: 478
+16KB (nsec/KB): 1947 | 391 | 414
+ITLB alloc: 1
+DTLB alloc: 13
+stalled cycles ITLB: 201
+stalled cycles micro DTLB: 686
+ITLB alloc: 0
+DTLB alloc: 2
+stalled cycles ITLB: 34
+stalled cycles micro DTLB: 380
+ITLB alloc: 0
+DTLB alloc: 13
+stalled cycles ITLB: 33
+stalled cycles micro DTLB: 561
+32KB (nsec/KB): 2330 | 588 | 391
+ITLB alloc: 2
+DTLB alloc: 32
+stalled cycles ITLB: 207
+stalled cycles micro DTLB: 1338
+ITLB alloc: 0
+DTLB alloc: 0
+stalled cycles ITLB: 0
+stalled cycles micro DTLB: 366
+ITLB alloc: 5
+DTLB alloc: 47
+stalled cycles ITLB: 107
+stalled cycles micro DTLB: 3012
+64KB (nsec/KB): 3188 | 960 | 392
+ITLB alloc: 7
+DTLB alloc: 64
+stalled cycles ITLB: 235
+stalled cycles micro DTLB: 3219
+ITLB alloc: 1
+DTLB alloc: 25
+stalled cycles ITLB: 10
+stalled cycles micro DTLB: 2195
+ITLB alloc: 9
+DTLB alloc: 126
+stalled cycles ITLB: 155
+stalled cycles micro DTLB: 16989
+128KB (nsec/KB): 3466 | 1083 | 393
+ITLB alloc: 13
+DTLB alloc: 123
+stalled cycles ITLB: 548
+stalled cycles micro DTLB: 20228
+ITLB alloc: 3
+DTLB alloc: 20
+stalled cycles ITLB: 156
+stalled cycles micro DTLB: 15142
+ITLB alloc: 20
+DTLB alloc: 332
+stalled cycles ITLB: 626
+stalled cycles micro DTLB: 38354
+256KB (nsec/KB): 3497 | 1096 | 393
+ITLB alloc: 91
+DTLB alloc: 799
+stalled cycles ITLB: 3974
+stalled cycles micro DTLB: 47656
+ITLB alloc: 37
+DTLB alloc: 524
+stalled cycles ITLB: 2783
+stalled cycles micro DTLB: 36000
+ITLB alloc: 29
+DTLB alloc: 25590
+stalled cycles ITLB: 1256
+stalled cycles micro DTLB: 102176
+512KB (nsec/KB): 3542 | 1158 | 397
+ITLB alloc: 236
+DTLB alloc: 22209
+stalled cycles ITLB: 8719
+stalled cycles micro DTLB: 117031
+ITLB alloc: 137
+DTLB alloc: 22060
+stalled cycles ITLB: 6357
+stalled cycles micro DTLB: 94285
+ITLB alloc: 53
+DTLB alloc: 51546
+stalled cycles ITLB: 2195
+stalled cycles micro DTLB: 204223
+1024KB (nsec/KB): 3999 | 1944 | 452
+ITLB alloc: 466
+DTLB alloc: 49564
+stalled cycles ITLB: 16418
+stalled cycles micro DTLB: 238492
+ITLB alloc: 285
+DTLB alloc: 48716
+stalled cycles ITLB: 13274
+stalled cycles micro DTLB: 188720
+ITLB alloc: 104
+DTLB alloc: 102859
+stalled cycles ITLB: 4348
+stalled cycles micro DTLB: 408623
+2048KB (nsec/KB): 4088 | 2033 | 481
+ITLB alloc: 723
+DTLB alloc: 102498
+stalled cycles ITLB: 31188
+stalled cycles micro DTLB: 471995
+ITLB alloc: 543
+DTLB alloc: 100804
+stalled cycles ITLB: 28206
+stalled cycles micro DTLB: 380112
+ITLB alloc: 204
+DTLB alloc: 205485
+stalled cycles ITLB: 9805
+stalled cycles micro DTLB: 819626
+4096KB (nsec/KB): 4093 | 2045 | 484

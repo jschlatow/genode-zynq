@@ -1,0 +1,130 @@
+[init -> test-cache] Icache stall cycles: 1523
+[init -> test-cache] Dcache stall cycles: 10527
+[init -> test-cache] main TLB stall cycles: 990
+[init -> test-cache] data evictions: 242
+[init -> test-cache] Icache stall cycles: 23
+[init -> test-cache] Dcache stall cycles: 1069
+[init -> test-cache] main TLB stall cycles: 369
+[init -> test-cache] data evictions: 69
+[init -> test-cache] Icache stall cycles: 1093
+[init -> test-cache] Dcache stall cycles: 14972
+[init -> test-cache] main TLB stall cycles: 695
+[init -> test-cache] data evictions: 270
+[init -> test-cache] 8KB (Cycles/KB): 863 | 291 | 320
+[init -> test-cache] Icache stall cycles: 16
+[init -> test-cache] Dcache stall cycles: 13588
+[init -> test-cache] main TLB stall cycles: 181
+[init -> test-cache] data evictions: 313
+[init -> test-cache] Icache stall cycles: 16
+[init -> test-cache] Dcache stall cycles: 2245
+[init -> test-cache] main TLB stall cycles: 369
+[init -> test-cache] data evictions: 137
+[init -> test-cache] Icache stall cycles: 0
+[init -> test-cache] Dcache stall cycles: 18927
+[init -> test-cache] main TLB stall cycles: 389
+[init -> test-cache] data evictions: 385
+[init -> test-cache] 16KB (Cycles/KB): 844 | 290 | 299
+[init -> test-cache] Icache stall cycles: 148
+[init -> test-cache] Dcache stall cycles: 47622
+[init -> test-cache] main TLB stall cycles: 420
+[init -> test-cache] data evictions: 2041
+[init -> test-cache] Icache stall cycles: 17
+[init -> test-cache] Dcache stall cycles: 22246
+[init -> test-cache] main TLB stall cycles: 459
+[init -> test-cache] data evictions: 1296
+[init -> test-cache] Icache stall cycles: 0
+[init -> test-cache] Dcache stall cycles: 63511
+[init -> test-cache] main TLB stall cycles: 586
+[init -> test-cache] data evictions: 946
+[init -> test-cache] 32KB (Cycles/KB): 885 | 294 | 306
+[init -> test-cache] Icache stall cycles: 215
+[init -> test-cache] Dcache stall cycles: 2689205
+[init -> test-cache] main TLB stall cycles: 460
+[init -> test-cache] data evictions: 168737
+[init -> test-cache] Icache stall cycles: 203
+[init -> test-cache] Dcache stall cycles: 3098562
+[init -> test-cache] main TLB stall cycles: 330
+[init -> test-cache] data evictions: 168585
+[init -> test-cache] Icache stall cycles: 171
+[init -> test-cache] Dcache stall cycles: 3147526
+[init -> test-cache] main TLB stall cycles: 631
+[init -> test-cache] data evictions: 975
+[init -> test-cache] 64KB (Cycles/KB): 1457 | 746 | 753
+[init -> test-cache] Icache stall cycles: 145
+[init -> test-cache] Dcache stall cycles: 6584254
+[init -> test-cache] main TLB stall cycles: 644
+[init -> test-cache] data evictions: 403541
+[init -> test-cache] Icache stall cycles: 161
+[init -> test-cache] Dcache stall cycles: 7643986
+[init -> test-cache] main TLB stall cycles: 452
+[init -> test-cache] data evictions: 403606
+[init -> test-cache] Icache stall cycles: 198
+[init -> test-cache] Dcache stall cycles: 7767672
+[init -> test-cache] main TLB stall cycles: 671
+[init -> test-cache] data evictions: 983
+[init -> test-cache] 128KB (Cycles/KB): 1578 | 853 | 863
+[init -> test-cache] Icache stall cycles: 354
+[init -> test-cache] Dcache stall cycles: 13417731
+[init -> test-cache] main TLB stall cycles: 1037
+[init -> test-cache] data evictions: 818772
+[init -> test-cache] Icache stall cycles: 319
+[init -> test-cache] Dcache stall cycles: 15562652
+[init -> test-cache] main TLB stall cycles: 719
+[init -> test-cache] data evictions: 818803
+[init -> test-cache] Icache stall cycles: 635
+[init -> test-cache] Dcache stall cycles: 15962124
+[init -> test-cache] main TLB stall cycles: 778
+[init -> test-cache] data evictions: 1008
+[init -> test-cache] 256KB (Cycles/KB): 1591 | 864 | 879
+[init -> test-cache] Icache stall cycles: 588
+[init -> test-cache] Dcache stall cycles: 27691305
+[init -> test-cache] main TLB stall cycles: 1335
+[init -> test-cache] data evictions: 1638180
+[init -> test-cache] Icache stall cycles: 954
+[init -> test-cache] Dcache stall cycles: 31594651
+[init -> test-cache] main TLB stall cycles: 1140
+[init -> test-cache] data evictions: 1638208
+[init -> test-cache] Icache stall cycles: 845
+[init -> test-cache] Dcache stall cycles: 34043361
+[init -> test-cache] main TLB stall cycles: 1573
+[init -> test-cache] data evictions: 1101
+[init -> test-cache] 512KB (Cycles/KB): 1611 | 873 | 921
+[init -> test-cache] Icache stall cycles: 4471
+[init -> test-cache] Dcache stall cycles: 128383258
+[init -> test-cache] main TLB stall cycles: 4193
+[init -> test-cache] data evictions: 3277105
+[init -> test-cache] Icache stall cycles: 687
+[init -> test-cache] Dcache stall cycles: 176328340
+[init -> test-cache] main TLB stall cycles: 1676
+[init -> test-cache] data evictions: 3277031
+[init -> test-cache] Icache stall cycles: 866
+[init -> test-cache] Dcache stall cycles: 165335295
+[init -> test-cache] main TLB stall cycles: 2047
+[init -> test-cache] data evictions: 1564
+[init -> test-cache] 1024KB (Cycles/KB): 2342 | 1978 | 1870
+[init -> test-cache] Icache stall cycles: 4332
+[init -> test-cache] Dcache stall cycles: 284649042
+[init -> test-cache] main TLB stall cycles: 6450
+[init -> test-cache] data evictions: 6554760
+[init -> test-cache] Icache stall cycles: 549
+[init -> test-cache] Dcache stall cycles: 397993420
+[init -> test-cache] main TLB stall cycles: 2889
+[init -> test-cache] data evictions: 6554667
+[init -> test-cache] Icache stall cycles: 5019
+[init -> test-cache] Dcache stall cycles: 372645786
+[init -> test-cache] main TLB stall cycles: 4038
+[init -> test-cache] data evictions: 2404
+[init -> test-cache] 2048KB (Cycles/KB): 2491 | 2199 | 2076
+[init -> test-cache] Icache stall cycles: 3506
+[init -> test-cache] Dcache stall cycles: 571221564
+[init -> test-cache] main TLB stall cycles: 13639
+[init -> test-cache] data evictions: 13109971
+[init -> test-cache] Icache stall cycles: 744
+[init -> test-cache] Dcache stall cycles: 803208073
+[init -> test-cache] main TLB stall cycles: 2230
+[init -> test-cache] data evictions: 13109637
+[init -> test-cache] Icache stall cycles: 7603
+[init -> test-cache] Dcache stall cycles: 782124399
+[init -> test-cache] main TLB stall cycles: 4483
+[init -> test-cache] data evictions: 4117
+[init -> test-cache] 4096KB (Cycles/KB): 2505 | 2217 | 2165
