@@ -43,7 +43,7 @@ class LogData(object):
             res1 = int(match.group(2))
             res2 = int(match.group(3))
             res3 = int(match.group(4))
-            if line.find('Cycles'):
+            if line.find('Cycles') > 0:
                 res1 = res1 / args.frequency_ghz
                 res2 = res2 / args.frequency_ghz
                 res3 = res3 / args.frequency_ghz

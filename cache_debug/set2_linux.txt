@@ -1,130 +1,130 @@
-Icache stall cycles: 2306
-Dcache stall cycles: 21220
-main TLB stall cycles: 1231
-data evictions: 267
-Icache stall cycles: 1119
-Dcache stall cycles: 2873
-main TLB stall cycles: 259
-data evictions: 59
-Icache stall cycles: 481
-Dcache stall cycles: 9081
-main TLB stall cycles: 200
-data evictions: 158
-8KB (nsec/KB): 1957 | 406 | 417
-Icache stall cycles: 1770
-Dcache stall cycles: 14341
-main TLB stall cycles: 462
-data evictions: 308
-Icache stall cycles: 3598
-Dcache stall cycles: 7542
-main TLB stall cycles: 48
-data evictions: 324
-Icache stall cycles: 651
-Dcache stall cycles: 4017
-main TLB stall cycles: 340
-data evictions: 121
-16KB (nsec/KB): 1948 | 410 | 395
-Icache stall cycles: 2844
-Dcache stall cycles: 608271
-main TLB stall cycles: 276
-data evictions: 26512
-Icache stall cycles: 1852
-Dcache stall cycles: 335268
-main TLB stall cycles: 170
-data evictions: 26147
-Icache stall cycles: 633
-Dcache stall cycles: 4910
-main TLB stall cycles: 285
-data evictions: 278
-32KB (nsec/KB): 2332 | 585 | 390
-Icache stall cycles: 3383
-Dcache stall cycles: 3933040
-main TLB stall cycles: 651
-data evictions: 167899
-Icache stall cycles: 294
-Dcache stall cycles: 2030528
-main TLB stall cycles: 300
-data evictions: 167336
-Icache stall cycles: 2372
-Dcache stall cycles: 8553
-main TLB stall cycles: 789
-data evictions: 469
-64KB (nsec/KB): 3187 | 960 | 392
-Icache stall cycles: 8294
-Dcache stall cycles: 9668758
-main TLB stall cycles: 1646
-data evictions: 403996
-Icache stall cycles: 1651
-Dcache stall cycles: 4852312
-main TLB stall cycles: 654
-data evictions: 403546
-Icache stall cycles: 2157
-Dcache stall cycles: 9986
-main TLB stall cycles: 1380
-data evictions: 542
-128KB (nsec/KB): 3467 | 1083 | 393
-Icache stall cycles: 17047
-Dcache stall cycles: 19682871
-main TLB stall cycles: 4567
-data evictions: 819710
-Icache stall cycles: 2731
-Dcache stall cycles: 9824973
-main TLB stall cycles: 1594
-data evictions: 818861
-Icache stall cycles: 3632
-Dcache stall cycles: 19721
-main TLB stall cycles: 3524
-data evictions: 689
-256KB (nsec/KB): 3497 | 1097 | 393
-Icache stall cycles: 130593
-Dcache stall cycles: 41327022
-main TLB stall cycles: 43073
-data evictions: 1639952
-Icache stall cycles: 43928
-Dcache stall cycles: 22242145
-main TLB stall cycles: 28776
-data evictions: 1638392
-Icache stall cycles: 16200
-Dcache stall cycles: 37339
-main TLB stall cycles: 129894
-data evictions: 970
-512KB (nsec/KB): 3559 | 1166 | 397
-Icache stall cycles: 74683
-Dcache stall cycles: 112277046
-main TLB stall cycles: 555786
-data evictions: 3279550
-Icache stall cycles: 67222
-Dcache stall cycles: 100975540
-main TLB stall cycles: 566921
-data evictions: 3277403
-Icache stall cycles: 47403
-Dcache stall cycles: 93906
-main TLB stall cycles: 283251
-data evictions: 1848
-1024KB (nsec/KB): 3998 | 1944 | 452
-Icache stall cycles: 142135
-Dcache stall cycles: 236876833
-main TLB stall cycles: 1215957
-data evictions: 6559467
-Icache stall cycles: 99160
-Dcache stall cycles: 215314010
-main TLB stall cycles: 1214071
-data evictions: 6555168
-Icache stall cycles: 55286
-Dcache stall cycles: 150716
-main TLB stall cycles: 576188
-data evictions: 3025
-2048KB (nsec/KB): 4087 | 2035 | 480
-Icache stall cycles: 291558
-Dcache stall cycles: 477217852
-main TLB stall cycles: 2477381
-data evictions: 13119042
-Icache stall cycles: 138757
-Dcache stall cycles: 433293252
-main TLB stall cycles: 2427605
-data evictions: 13110473
-Icache stall cycles: 76836
-Dcache stall cycles: 622286
-main TLB stall cycles: 1678855
-data evictions: 11749
-4096KB (nsec/KB): 4093 | 2043 | 486
+Icache stall cycles: 11101
+Dcache stall cycles: 28054
+main TLB stall cycles: 1295
+data evictions: 385
+Icache stall cycles: 565
+Dcache stall cycles: 3559
+main TLB stall cycles: 35
+data evictions: 96
+Icache stall cycles: 558
+Dcache stall cycles: 10929
+main TLB stall cycles: 47
+data evictions: 204
+8KB (nsec/KB): 2015 | 478 | 497
+Icache stall cycles: 2123
+Dcache stall cycles: 15669
+main TLB stall cycles: 150
+data evictions: 334
+Icache stall cycles: 130
+Dcache stall cycles: 2738
+main TLB stall cycles: 56
+data evictions: 110
+Icache stall cycles: 399
+Dcache stall cycles: 6995
+main TLB stall cycles: 87
+data evictions: 243
+16KB (nsec/KB): 1950 | 454 | 461
+Icache stall cycles: 4190
+Dcache stall cycles: 608422
+main TLB stall cycles: 305
+data evictions: 26579
+Icache stall cycles: 148
+Dcache stall cycles: 544280
+main TLB stall cycles: 81
+data evictions: 25842
+Icache stall cycles: 556
+Dcache stall cycles: 8146
+main TLB stall cycles: 194
+data evictions: 310
+32KB (nsec/KB): 2332 | 758 | 448
+Icache stall cycles: 6654
+Dcache stall cycles: 3945674
+main TLB stall cycles: 665
+data evictions: 168159
+Icache stall cycles: 6356
+Dcache stall cycles: 3716753
+main TLB stall cycles: 55
+data evictions: 167405
+Icache stall cycles: 2399
+Dcache stall cycles: 10317
+main TLB stall cycles: 379
+data evictions: 423
+64KB (nsec/KB): 3196 | 1511 | 443
+Icache stall cycles: 6543
+Dcache stall cycles: 9678433
+main TLB stall cycles: 1572
+data evictions: 404051
+Icache stall cycles: 3307
+Dcache stall cycles: 9243761
+main TLB stall cycles: 637
+data evictions: 403556
+Icache stall cycles: 1960
+Dcache stall cycles: 11406
+main TLB stall cycles: 910
+data evictions: 445
+128KB (nsec/KB): 3466 | 1756 | 441
+Icache stall cycles: 12364
+Dcache stall cycles: 19694408
+main TLB stall cycles: 2973
+data evictions: 819578
+Icache stall cycles: 4161
+Dcache stall cycles: 18845715
+main TLB stall cycles: 851
+data evictions: 818853
+Icache stall cycles: 3828
+Dcache stall cycles: 18026
+main TLB stall cycles: 2145
+data evictions: 463
+256KB (nsec/KB): 3494 | 1780 | 440
+Icache stall cycles: 29602
+Dcache stall cycles: 42405671
+main TLB stall cycles: 35192
+data evictions: 1639566
+Icache stall cycles: 32532
+Dcache stall cycles: 46654580
+main TLB stall cycles: 23835
+data evictions: 1638466
+Icache stall cycles: 20809
+Dcache stall cycles: 35273
+main TLB stall cycles: 106105
+data evictions: 535
+512KB (nsec/KB): 3585 | 2044 | 444
+Icache stall cycles: 77075
+Dcache stall cycles: 111334007
+main TLB stall cycles: 534207
+data evictions: 3279514
+Icache stall cycles: 62842
+Dcache stall cycles: 174978722
+main TLB stall cycles: 513721
+data evictions: 3277879
+Icache stall cycles: 28091
+Dcache stall cycles: 53319
+main TLB stall cycles: 227820
+data evictions: 614
+1024KB (nsec/KB): 3976 | 3248 | 465
+Icache stall cycles: 137043
+Dcache stall cycles: 236505578
+main TLB stall cycles: 1211237
+data evictions: 6559410
+Icache stall cycles: 109272
+Dcache stall cycles: 385369240
+main TLB stall cycles: 1137938
+data evictions: 6556346
+Icache stall cycles: 28293
+Dcache stall cycles: 72842
+main TLB stall cycles: 481375
+data evictions: 744
+2048KB (nsec/KB): 4073 | 3508 | 479
+Icache stall cycles: 273415
+Dcache stall cycles: 475736827
+main TLB stall cycles: 2513945
+data evictions: 13119126
+Icache stall cycles: 195071
+Dcache stall cycles: 776433406
+main TLB stall cycles: 2320531
+data evictions: 13113104
+Icache stall cycles: 58212
+Dcache stall cycles: 776931
+main TLB stall cycles: 2363700
+data evictions: 1528
+4096KB (nsec/KB): 4086 | 3529 | 488
