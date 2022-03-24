@@ -1,0 +1,130 @@
+IUTLB miss: 28
+DUTLB miss: 171
+ICACHE miss: 796
+PLE FIFO flush: 20
+IUTLB miss: 0
+DUTLB miss: 162
+ICACHE miss: 147
+PLE FIFO flush: 12
+IUTLB miss: 7
+DUTLB miss: 190
+ICACHE miss: 287
+PLE FIFO flush: 14
+8KB (nsec/KB): 1324 | 310 | 337
+IUTLB miss: 34
+DUTLB miss: 176
+ICACHE miss: 702
+PLE FIFO flush: 20
+IUTLB miss: 0
+DUTLB miss: 169
+ICACHE miss: 140
+PLE FIFO flush: 12
+IUTLB miss: 20
+DUTLB miss: 266
+ICACHE miss: 949
+PLE FIFO flush: 18
+16KB (nsec/KB): 1309 | 299 | 309
+IUTLB miss: 63
+DUTLB miss: 328
+ICACHE miss: 899
+PLE FIFO flush: 30
+IUTLB miss: 9
+DUTLB miss: 139
+ICACHE miss: 710
+PLE FIFO flush: 14
+IUTLB miss: 25
+DUTLB miss: 290
+ICACHE miss: 346
+PLE FIFO flush: 20
+32KB (nsec/KB): 1529 | 481 | 297
+IUTLB miss: 152
+DUTLB miss: 788
+ICACHE miss: 1462
+PLE FIFO flush: 54
+IUTLB miss: 7
+DUTLB miss: 159
+ICACHE miss: 323
+PLE FIFO flush: 14
+IUTLB miss: 58
+DUTLB miss: 843
+ICACHE miss: 888
+PLE FIFO flush: 30
+64KB (nsec/KB): 2038 | 890 | 294
+IUTLB miss: 315
+DUTLB miss: 2379
+ICACHE miss: 1842
+PLE FIFO flush: 98
+IUTLB miss: 32
+DUTLB miss: 915
+ICACHE miss: 883
+PLE FIFO flush: 20
+IUTLB miss: 111
+DUTLB miss: 11051
+ICACHE miss: 941
+PLE FIFO flush: 48
+128KB (nsec/KB): 2186 | 1015 | 293
+IUTLB miss: 503
+DUTLB miss: 12884
+ICACHE miss: 2333
+PLE FIFO flush: 162
+IUTLB miss: 46
+DUTLB miss: 11076
+ICACHE miss: 1087
+PLE FIFO flush: 24
+IUTLB miss: 215
+DUTLB miss: 26069
+ICACHE miss: 1179
+PLE FIFO flush: 82
+256KB (nsec/KB): 2199 | 1027 | 293
+IUTLB miss: 1031
+DUTLB miss: 29259
+ICACHE miss: 2286
+PLE FIFO flush: 310
+IUTLB miss: 76
+DUTLB miss: 25644
+ICACHE miss: 1001
+PLE FIFO flush: 32
+IUTLB miss: 417
+DUTLB miss: 52500
+ICACHE miss: 1285
+PLE FIFO flush: 148
+512KB (nsec/KB): 2291 | 1091 | 295
+IUTLB miss: 2266
+DUTLB miss: 59513
+ICACHE miss: 3308
+PLE FIFO flush: 658
+IUTLB miss: 377
+DUTLB miss: 52512
+ICACHE miss: 2287
+PLE FIFO flush: 110
+IUTLB miss: 820
+DUTLB miss: 101126
+ICACHE miss: 1103
+PLE FIFO flush: 280
+1024KB (nsec/KB): 4136 | 2919 | 298
+IUTLB miss: 4714
+DUTLB miss: 118916
+ICACHE miss: 3893
+PLE FIFO flush: 1322
+IUTLB miss: 904
+DUTLB miss: 105593
+ICACHE miss: 10703
+PLE FIFO flush: 240
+IUTLB miss: 1637
+DUTLB miss: 180266
+ICACHE miss: 1617
+PLE FIFO flush: 548
+2048KB (nsec/KB): 4543 | 3326 | 309
+IUTLB miss: 9487
+DUTLB miss: 237512
+ICACHE miss: 5919
+PLE FIFO flush: 2628
+IUTLB miss: 1838
+DUTLB miss: 209837
+ICACHE miss: 3383
+PLE FIFO flush: 432
+IUTLB miss: 3281
+DUTLB miss: 339877
+ICACHE miss: 1610
+PLE FIFO flush: 1078
+4096KB (nsec/KB): 4582 | 3366 | 315

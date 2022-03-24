@@ -1,0 +1,130 @@
+[init -> test-cache] IUTLB miss: 32
+[init -> test-cache] DUTLB miss: 214
+[init -> test-cache] ICACHE miss: 1285
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 0
+[init -> test-cache] DUTLB miss: 103
+[init -> test-cache] ICACHE miss: 493
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 34
+[init -> test-cache] DUTLB miss: 199
+[init -> test-cache] ICACHE miss: 992
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] 8KB (Cycles/KB): 878 | 291 | 322
+[init -> test-cache] IUTLB miss: 0
+[init -> test-cache] DUTLB miss: 88
+[init -> test-cache] ICACHE miss: 493
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 0
+[init -> test-cache] DUTLB miss: 113
+[init -> test-cache] ICACHE miss: 436
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 0
+[init -> test-cache] DUTLB miss: 118
+[init -> test-cache] ICACHE miss: 428
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] 16KB (Cycles/KB): 851 | 290 | 300
+[init -> test-cache] IUTLB miss: 0
+[init -> test-cache] DUTLB miss: 167
+[init -> test-cache] ICACHE miss: 498
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 0
+[init -> test-cache] DUTLB miss: 105
+[init -> test-cache] ICACHE miss: 515
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 0
+[init -> test-cache] DUTLB miss: 131
+[init -> test-cache] ICACHE miss: 492
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] 32KB (Cycles/KB): 890 | 293 | 305
+[init -> test-cache] IUTLB miss: 4
+[init -> test-cache] DUTLB miss: 138
+[init -> test-cache] ICACHE miss: 472
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 0
+[init -> test-cache] DUTLB miss: 91
+[init -> test-cache] ICACHE miss: 488
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 0
+[init -> test-cache] DUTLB miss: 101
+[init -> test-cache] ICACHE miss: 453
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] 64KB (Cycles/KB): 1458 | 730 | 737
+[init -> test-cache] IUTLB miss: 4
+[init -> test-cache] DUTLB miss: 122
+[init -> test-cache] ICACHE miss: 476
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 3
+[init -> test-cache] DUTLB miss: 99
+[init -> test-cache] ICACHE miss: 513
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 2
+[init -> test-cache] DUTLB miss: 121
+[init -> test-cache] ICACHE miss: 478
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] 128KB (Cycles/KB): 1556 | 824 | 832
+[init -> test-cache] IUTLB miss: 6
+[init -> test-cache] DUTLB miss: 129
+[init -> test-cache] ICACHE miss: 474
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 3
+[init -> test-cache] DUTLB miss: 124
+[init -> test-cache] ICACHE miss: 530
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 1
+[init -> test-cache] DUTLB miss: 131
+[init -> test-cache] ICACHE miss: 475
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] 256KB (Cycles/KB): 1568 | 832 | 848
+[init -> test-cache] IUTLB miss: 0
+[init -> test-cache] DUTLB miss: 216
+[init -> test-cache] ICACHE miss: 501
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 1
+[init -> test-cache] DUTLB miss: 109
+[init -> test-cache] ICACHE miss: 464
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 5
+[init -> test-cache] DUTLB miss: 113
+[init -> test-cache] ICACHE miss: 442
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] 512KB (Cycles/KB): 1630 | 845 | 891
+[init -> test-cache] IUTLB miss: 43
+[init -> test-cache] DUTLB miss: 334
+[init -> test-cache] ICACHE miss: 931
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 3
+[init -> test-cache] DUTLB miss: 133
+[init -> test-cache] ICACHE miss: 466
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 0
+[init -> test-cache] DUTLB miss: 167
+[init -> test-cache] ICACHE miss: 484
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] 1024KB (Cycles/KB): 3536 | 1965 | 1869
+[init -> test-cache] IUTLB miss: 39
+[init -> test-cache] DUTLB miss: 396
+[init -> test-cache] ICACHE miss: 915
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 0
+[init -> test-cache] DUTLB miss: 114
+[init -> test-cache] ICACHE miss: 502
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 33
+[init -> test-cache] DUTLB miss: 285
+[init -> test-cache] ICACHE miss: 892
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] 2048KB (Cycles/KB): 3975 | 2182 | 2055
+[init -> test-cache] IUTLB miss: 29
+[init -> test-cache] DUTLB miss: 309
+[init -> test-cache] ICACHE miss: 912
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 6
+[init -> test-cache] DUTLB miss: 162
+[init -> test-cache] ICACHE miss: 500
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] IUTLB miss: 54
+[init -> test-cache] DUTLB miss: 301
+[init -> test-cache] ICACHE miss: 996
+[init -> test-cache] PLE FIFO flush: 0
+[init -> test-cache] 4096KB (Cycles/KB): 4033 | 2198 | 2141
