@@ -25,8 +25,8 @@ namespace Zynq {
 		MMIO_0_BASE    = 0xe0000000, /* IOP devices */
 		MMIO_0_SIZE    = 0x10000000,
 
-		/* normal RAM */
-		RAM_0_BASE = 0x00000000,
+		/* normal DDR RAM (excluding OCM) */
+		RAM_0_BASE = 0x00100000,
 
 		/* UART controllers */
 		UART_0_MMIO_BASE = MMIO_0_BASE,
