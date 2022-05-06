@@ -8,11 +8,11 @@ import_from_depot [depot_user]/src/[base_src] \
                   [depot_user]/src/vfs \
                   [depot_user]/src/part_block \
                   [depot_user]/src/zynq_platform_drv \
+                  [depot_user]/src/zynq_sd_card_drv \
                   [depot_user]/src/rump
 
 build {
 	app/block_tester
-	drivers/sd_card/zynq
 }
 
 install_config {
@@ -158,7 +158,7 @@ install_config {
 	</start>
 </config> }
 
-build_boot_image { block_tester zynq_sd_card_drv zynq_sd_card.dtb }
+build_boot_image { block_tester }
 
 run_genode_until forever
 
