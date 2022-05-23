@@ -9,6 +9,7 @@ import_from_depot [depot_user]/src/[base_src] \
                   [depot_user]/src/part_block \
                   [depot_user]/src/zynq_platform_drv \
                   [depot_user]/src/zynq_sd_card_drv \
+                  [depot_user]/raw/[board]-devices \
                   [depot_user]/src/rump
 
 build {
@@ -32,13 +33,6 @@ install_config {
 		<resource name="RAM" quantum="1M"/>
 		<provides><service name="Platform"/></provides>
 		<config>
-			<device name="sdhci0" type="arasan,sdhci-8.9a">
-				<io_mem address="0xE0100000" size="0x1000"/>;
-				<irq number="56"/>
-				<clock name="sdio0"      driver_name="clk_xin"/>
-				<clock name="sdio0_aper" driver_name="clk_ahb"/>
-			</device>
-
 			<policy label="sd_card_drv -> " info="yes">
 				<device name="sdhci0"/>
 			</policy>

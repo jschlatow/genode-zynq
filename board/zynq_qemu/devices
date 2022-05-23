@@ -1,0 +1,13 @@
+<devices>
+	<device name="ethernet0" type="cadence_gem">
+		<io_mem address="0xE000B000" size="0x1000"/>;
+		<irq number="54"/>
+		<clock name="gem0"/>
+	</device>
+	<device name="sdhci0" type="arasan,sdhci-8.9a">
+		<io_mem address="0xE0100000" size="0x1000"/>;
+		<irq number="56"/>
+		<clock name="sdio0"      driver_name="clk_xin"/>
+		<clock name="sdio0_aper" driver_name="clk_ahb"/>
+	</device>
+</devices>

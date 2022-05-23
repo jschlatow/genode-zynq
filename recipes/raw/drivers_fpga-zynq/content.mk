@@ -1,4 +1,4 @@
-content: drivers.config devices.config
+content: drivers.config
 
-drivers.config devices.config:
+drivers.config:
 	cp $(REP_DIR)/recipes/raw/drivers_fpga-zynq/$@ $@

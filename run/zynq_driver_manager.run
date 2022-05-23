@@ -7,8 +7,14 @@ create_boot_directory
 import_from_depot [depot_user]/src/[base_src] \
                   [depot_user]/src/init \
                   [depot_user]/pkg/drivers_fpga-zynq \
+                  [depot_user]/src/driver_manager-zynq \
                   [depot_user]/raw/[board]-devices
 
+set build_components {
+	test/zynq_driver_manager
+}
+
+build $build_components
 
 #
 # Config
@@ -50,7 +56,35 @@ set config  {
 				<service name="Report"/>
 				<service name="ROM"/>
 			</provides>
-			<config verbose="yes"/>
+			<config verbose="yes">
+				<policy report="platform_drv -> platform_drv -> devices"
+				        label="zynq_driver_manager -> devices"/>
+				<policy report="zynq_driver_manager -> init.config"
+				        label="dynamic_drivers -> config"/>
+			</config>
+		</start>
+
+		<start name="dynamic_drivers" caps="500">
+			<binary name="init"/>
+			<resource name="RAM" quantum="5M"/>
+			<route>
+				<service name="ROM" label="config"> <child name="report_rom"/> </service>
+				<any-service> <parent/> <any-child/> </any-service>
+			</route>
+		</start>
+
+		<start name="zynq_driver_manager">
+			<resource name="RAM" quantum="2M"/>
+			<route>
+				<service name="ROM" label="devices"> <child name="report_rom"/> </service>
+				<any-service> <parent/> <any-child/> </any-service>
+			</route>
+			<config>
+				<driver name="dummy_drv" device="dummy">
+					<binary name="test-zynq_driver_manager"/>
+					<resource name="RAM" quantum="2M"/>
+				</driver>
+			</config>
 		</start>
 
 	</config>
@@ -65,6 +99,9 @@ set policy_fd [open [run_dir]/genode/policy w]
 puts $policy_fd {
 	<config>
 		<report devices="yes"/>
+		<policy label="dynamic_drivers -> dummy_drv -> ">
+			<device name="dummy"/>
+		</policy>
 	</config>
 }
 close $policy_fd
@@ -75,9 +112,8 @@ close $policy_fd
 set fpga_devices_fd [open [run_dir]/genode/fpga_devices w]
 puts $fpga_devices_fd {
 	<devices>
-		<device name="axi-dmac-rx" type="rx_dmac">
+		<device name="dummy" type="dummy">
 			<io_mem address="0x7c400000" size="0x10000"/>;
-			<irq number="89"/>
 		</device>
 	</devices>
 }
@@ -89,10 +125,9 @@ close $fpga_devices_fd
 
 # generic modules
 set boot_modules {
-	fpga.bit
+	fpga.bit test-zynq_driver_manager
 }
 build_boot_image $boot_modules
 
 append qemu_args " -nographic "
-run_genode_until {<device name="axi-dmac-rx" type="rx_dmac" used="false">} 20
-
+run_genode_until {<device name="dummy" type="dummy" used="true">} 20

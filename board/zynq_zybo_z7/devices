@@ -1,0 +1,49 @@
+<devices>
+	<device name="devcfg" type="xlnx,zynq-devcfg-1.0">
+		<io_mem address="0xf8007000" size="0x1000"/>;
+	</device>
+	<device name="ethernet0" type="cadence_gem">
+		<io_mem address="0xE000B000" size="0x1000"/>;
+		<irq number="54"/>
+		<clock name="gem0"/>
+	</device>
+	<device name="ethernet1" type="cadence_gem">
+		<io_mem address="0xE000C000" size="0x1000"/>;
+		<irq number="77"/>
+		<clock name="gem1"/>
+	</device>
+	<device name="spi0" type="zynq-spi">
+		<io_mem address="0xe0006000" size="0x1000"/>
+		<irq number="58"/>
+		<property name="spi-max-frequency" value="0x989680"/>
+		<property name="spi-cpha" value="yes"/>
+		<clock name="spi0"/>
+	</device>
+	<device name="spi1" type="zynq-spi">
+		<io_mem address="0xe0007000" size="0x1000"/>
+		<irq number="81"/>
+		<property name="spi-max-frequency" value="0x989680"/>
+		<property name="spi-cpha" value="yes"/>
+		<clock name="spi1"/>
+	</device>
+	<device name="gpio0" type="zynq-gpio">
+		<io_mem address="0xe000a000" size="0x1000"/>;
+		<clock name="gpio0"/>
+	</device>
+	<device name="gpio1" type="zynq-gpio">
+		<io_mem address="0xe000b000" size="0x1000"/>;
+		<clock name="gpio1"/>
+	</device>
+	<device name="sdhci0" type="arasan,sdhci-8.9a">
+		<io_mem address="0xE0100000" size="0x1000"/>;
+		<irq number="56"/>
+		<clock name="sdio0"      driver_name="clk_xin"/>
+		<clock name="sdio0_aper" driver_name="clk_ahb"/>
+	</device>
+	<device name="sdhci1" type="arasan,sdhci-8.9a">
+		<io_mem address="0xE0101000" size="0x1000"/>;
+		<irq number="79"/>
+		<clock name="sdio1"      driver_name="clk_xin"/>
+		<clock name="sdio1_aper" driver_name="clk_ahb"/>
+	</device>
+</devices>

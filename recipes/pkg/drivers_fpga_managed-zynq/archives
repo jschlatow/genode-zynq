@@ -1,7 +1,0 @@
-_/src/fpga_drv
-_/src/zynq_platform_drv
-_/src/report_rom
-_/src/rom_filter
-_/src/vfs
-_/src/driver_manager-zynq
-_/raw/drivers_fpga_managed-zynq

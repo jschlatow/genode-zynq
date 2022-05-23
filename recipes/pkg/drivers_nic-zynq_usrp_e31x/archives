@@ -1,3 +1,4 @@
 _/src/zynq_nic_drv
 _/src/zynq_platform_drv
-_/raw/drivers_nic-zynq0
+_/raw/drivers_nic-zynq
+_/raw/zynq_usrp_e31x-devices

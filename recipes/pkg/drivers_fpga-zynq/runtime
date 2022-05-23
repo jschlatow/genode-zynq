@@ -2,7 +2,8 @@
 
 	<requires>
 		<rom label="fpga.bit"/>
-		<rom label="fpga_devices.config"/>
+		<rom label="fpga_devices"/>
+		<rom label="policy"/>
 	</requires>
 
 	<provides> <platform/> </provides>
@@ -13,7 +14,7 @@
 		<rom label="rom_filter"/>
 		<rom label="report_rom"/>
 		<rom label="fpga_drv"/>
-		<rom label="devices.config"/>
+		<rom label="devices"/>
 		<rom label="drivers.config"/>
 	</content>
 

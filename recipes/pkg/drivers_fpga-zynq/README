@@ -3,7 +3,11 @@
                  using the FPGA of the Zynq SoC
                      with a custom bitstream
 
-The package requires two ROM sessions: A bitstream 'fpga.bit', and a config
-'fpga_devices.config' specifying the additional devices and policies passed to
-the platform driver once the bitstream has been loaded.
-In return, the package provides a Platform session.
+The package requires three ROM sessions: A bitstream 'fpga.bit', a config
+'fpga_devices' specifying the additional devices, and a config 'policy'
+specifying the additional policy. The 'policy' ROM is merged with the default
+config ROM of the internal platform driver. Similarly, the 'fpga_devices' ROM
+is merged with the default devices ROM once the FPGA bitstream has been loaded.
+In return, the package provides a Platform session.  Moreover, reporting of the
+platform driver can be enabled via the 'policy' ROM.  The reports are routed to
+the parent.
