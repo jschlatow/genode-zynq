@@ -647,8 +647,15 @@ void Ad::Ad9361::tx_config(unsigned bandwidth_hz, unsigned sampling_hz, unsigned
 void Ad::Ad9361::allocate_buffers(size_t rx_bytes, size_t tx_bytes)
 {
 	/* construct dmac devices */
-	_dmac_rx.acquire(_env, _platform, rx_bytes);
-	_dmac_tx.acquire(_env, _platform, tx_bytes);
+	if (rx_bytes)
+		_dmac_rx.acquire(_env, _platform, rx_bytes);
+	else
+		warning("Skipping initialisation of RX DMAC because provided buffer size is zero.");
+
+	if (tx_bytes)
+		_dmac_tx.acquire(_env, _platform, tx_bytes);
+	else
+		warning("Skipping initialisation of TX DMAC because provided buffer size is zero.");
 }
 
 
