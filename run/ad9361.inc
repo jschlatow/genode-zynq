@@ -7,11 +7,16 @@ if {[expr ![have_board zynq_usrp_e31x]]} {
 	exit 0
 }
 
+create_boot_directory
+
+import_from_depot [depot_user]/src/[base_src] \
+                  [depot_user]/src/init \
+                  [depot_user]/src/vfs \
+                  [depot_user]/src/libc \
+                  [depot_user]/src/zynq_platform_drv
+
 # generic components
-set build_components {
-	core init timer
-	drivers/platform
-}
+set build_components {}
 
 if {$binary_name == ""} {
 	puts "binary_name is unspecified"
@@ -26,7 +31,6 @@ if {$test_component == ""} {
 append build_components " $test_component "
 
 build $build_components
-create_boot_directory
 
 
 #
@@ -53,22 +57,21 @@ set config  {
 			<provides><service name="Timer"/></provides>
 		</start>
 
-		<start name="platform_drv" caps="100">
+		<start name="platform_drv" caps="100" managing_system="yes">
+			<binary name="zynq_platform_drv"/>
 			<resource name="RAM" quantum="1M"/>
 			<provides> <service name="Platform"/> </provides>
-			<route> <any-service> <parent/> </any-service> </route>
-			<config>
+			<route> <any-service> <parent/> <any-child/> </any-service> </route>
+			<config devices_rom="config">
 				<device name="spi0" type="zynq-spi">
 					<io_mem address="0xe0006000" size="0x1000"/>
-					<property name="input-clock" value="166666665"/>
+					<irq number="58"/>
 					<property name="spi-max-frequency" value="0x989680"/>
 					<property name="spi-cpha" value="yes"/>
+					<clock name="spi0"/>
 				</device>
-				<device name="zynq-gpio" type="zynq-gpio">
+				<device name="gpio0" type="zynq-gpio">
 					<io_mem address="0xe000a000" size="0x1000"/>;
-				</device>
-				<device name="axi-spi" type="spi">
-					<io_mem address="0x43c00000" size="0x10000"/>;
 				</device>
 				<device name="axi-dmac-rx" type="rx_dmac">
 					<io_mem address="0x7c400000" size="0x10000"/>;
@@ -89,7 +92,7 @@ set config  {
 					<device name="axi-dmac-tx"/>
 					<device name="axi-adc-rx"/>
 					<device name="axi-dac-tx"/>
-					<device name="zynq-gpio"/>
+					<device name="gpio0"/>
 					<device name="spi0"/>
 				</policy>
 			</config>
@@ -225,10 +228,7 @@ install_config $config
 #
 
 # generic modules
-set boot_modules {
-	core libc.lib.so vfs.lib.so
-	init timer platform_drv
-}
+set boot_modules { }
 append boot_modules $binary_name
 
 build_boot_image $boot_modules
