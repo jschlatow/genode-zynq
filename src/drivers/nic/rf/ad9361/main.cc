@@ -36,7 +36,6 @@ struct Rf::Main
 	Constructible<Uplink_client>  uplink_client   { };
 
 	Signal_handler<Main>          config_handler  { env.ep(), *this, &Main::handle_config };
-	Signal_handler<Main>          devices_handler { env.ep(), *this, &Main::handle_devices };
 	Device::State                 state           { Device::State::STOPPED };
 
 	Net::Mac_address mac_address()
@@ -80,14 +79,6 @@ struct Rf::Main
 		update_state(new_state);
 	}
 
-	void handle_devices()
-	{
-		device.platform().update();
-
-		Device::State new_state = device.update_devices(config_rom.xml());
-		update_state(new_state);
-	}
-
 	Main(Env &env) : env(env)
 	{
 		Device::State new_state = device.update_config(config_rom.xml());
@@ -96,7 +87,6 @@ struct Rf::Main
 			warning("waiting for devices to become available");
 
 		config_rom.sigh(config_handler);
-		device.platform().sigh(devices_handler);
 	}
 };
 

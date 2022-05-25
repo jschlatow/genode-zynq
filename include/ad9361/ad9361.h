@@ -19,7 +19,6 @@
 
 #include <util/xml_node.h>
 #include <platform_session/device.h>
-#include <platform_session/volatile_device.h>
 #include <drivers/dmac.h>
 
 namespace Ad {
@@ -53,8 +52,11 @@ class Ad::Ad9361
 		Platform::Connection &_platform;
 		State                _state      { STOPPED };
 
-		Platform::Volatile_driver<Ad::Axi_dmac_rx, Type> _dmac_rx { _platform, Type { "rx_dmac" } };
-		Platform::Volatile_driver<Ad::Axi_dmac_tx, Type> _dmac_tx { _platform, Type { "tx_dmac" } };
+		Platform::Device     _device_rx { _platform, Type { "rx_dmac" } };
+		Platform::Device     _device_tx { _platform, Type { "tx_dmac" } };
+
+		Constructible<Ad::Axi_dmac_rx> _dmac_rx { };
+		Constructible<Ad::Axi_dmac_tx> _dmac_tx { };
 
 		void _update_init_params(Xml_node const &);
 
@@ -79,19 +81,8 @@ class Ad::Ad9361
 		 */
 		void allocate_buffers(size_t rx_bytes, size_t tx_bytes);
 
-		/**
-		 * Refresh device availability.
-		 *
-		 * If driver is started and devices are missing, driver will be stopped.
-		 * If driver is stopped and devices are available, try starting the
-		 * driver.
-		 *
-		 * Returns driver state
-		 */
-		State update_devices(Xml_node const & config);
-
-		Ad::Axi_dmac_tx & tx() { return _dmac_tx.driver(); }
-		Ad::Axi_dmac_rx & rx() { return _dmac_rx.driver(); }
+		Ad::Axi_dmac_tx & tx() { return *_dmac_tx; }
+		Ad::Axi_dmac_rx & rx() { return *_dmac_rx; }
 
 		void rx_config(unsigned bw_hz, unsigned fs_hz, unsigned lo_hz);
 		void tx_config(unsigned bw_hz, unsigned fs_hz, unsigned lo_hz);

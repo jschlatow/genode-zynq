@@ -588,18 +588,6 @@ Ad::Ad9361::State Ad::Ad9361::update_config(Xml_node const & config)
 }
 
 
-Ad::Ad9361::State Ad::Ad9361::update_devices(Xml_node const & config)
-{
-	/**
-	 * only try restarting driver if it was not started yet
-	 */
-	if (_state == State::STOPPED)
-		_restart_driver(config);
-
-	return _state;
-}
-
-
 void Ad::Ad9361::rx_config(unsigned bandwidth_hz, unsigned sampling_hz, unsigned lo_hz)
 {
 	ad9361_rf_phy *phy = _ad9361_config().ad9361_phy;
@@ -648,12 +636,12 @@ void Ad::Ad9361::allocate_buffers(size_t rx_bytes, size_t tx_bytes)
 {
 	/* construct dmac devices */
 	if (rx_bytes)
-		_dmac_rx.acquire(_env, _platform, rx_bytes);
+		_dmac_rx.construct(_device_rx, _env, _platform, rx_bytes);
 	else
 		warning("Skipping initialisation of RX DMAC because provided buffer size is zero.");
 
 	if (tx_bytes)
-		_dmac_tx.acquire(_env, _platform, tx_bytes);
+		_dmac_tx.construct(_device_tx, _env, _platform, tx_bytes);
 	else
 		warning("Skipping initialisation of TX DMAC because provided buffer size is zero.");
 }

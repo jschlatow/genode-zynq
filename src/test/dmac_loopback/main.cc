@@ -34,7 +34,6 @@ struct Main : Ad::Ad9361
 	Timer::Connection             timer           { _env };
 	Signal_handler<Main>          irq_handler     { _env.ep(), *this, &Main::handle_irq };
 	Signal_handler<Main>          config_handler  { _env.ep(), *this, &Main::handle_config };
-	Signal_handler<Main>          devices_handler { _env.ep(), *this, &Main::handle_devices };
 
 	unsigned                      cnt_recv    { 0 };
 	unsigned                      cnt_sent    { 0 };
@@ -129,18 +128,6 @@ struct Main : Ad::Ad9361
 			start_driver();
 	}
 
-	void handle_devices()
-	{
-		_platform.update();
-
-		State old_state = _state;
-		State new_state = update_devices(config.xml());
-
-		if (old_state != new_state)
-			if (new_state == State::STARTED)
-				start_driver();
-	}
-
 	Main(Genode::Env &env)
 	: Ad::Ad9361(env)
 	{
@@ -151,7 +138,6 @@ struct Main : Ad::Ad9361
 			warning("waiting for devices to become available");
 
 		config.sigh(config_handler);
-		_platform.sigh(devices_handler);
 	}
 
 };

@@ -53,13 +53,14 @@ struct Ad::Attached_device : Genode::Registry<Ad::Attached_device>::Element
 class Ad::Platform
 {
 	private:
-		typedef ::Platform::Volatile_driver<Gpio::Zynq_regs,Device::Type>   Gpio_driver;
-		typedef Spi::Zynq_driver                                            Spi_driver;
+		typedef Gpio::Zynq_regs  Gpio_driver;
+		typedef Spi::Zynq_driver Spi_driver;
 
 		Genode::Env                      &_env;
 		::Platform::Connection            _platform  { _env };
 		Genode::Heap                      _heap      { _env.ram(), _env.rm() };
-		Gpio_driver                       _gpio      { _platform, Device::Type { "zynq-gpio" } };
+		::Platform::Device                _gpio_dev  { _platform, Device::Type { "zynq-gpio" } };
+		Gpio_driver                       _gpio      { _gpio_dev };
 		Spi_driver                        _spi       { _platform, Device::Type { "zynq-spi" } };
 
 		Genode::Registry<Attached_device> _devices   { };
@@ -90,13 +91,7 @@ class Ad::Platform
 		::Platform::Connection &platform() { return _platform; };
 		Spi_driver             &spi()      { return _spi; }
 
-		Gpio_driver::Driver    &gpio()
-		{
-			if (!_gpio.available())
-				_gpio.acquire();
-
-			return _gpio.driver();
-		}
+		Gpio_driver            &gpio()     { return _gpio; }
 };
 
 #endif /* _SRC__LIB__AD_NOOS__PLATFORM_H_ */

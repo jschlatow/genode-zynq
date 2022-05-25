@@ -49,7 +49,6 @@ class Genode::Device : protected Ad::Ad9361
 
 		using Ad::Ad9361::State;
 		using Ad::Ad9361::update_config;
-		using Ad::Ad9361::update_devices;
 
 		Device(Env                    &env,
 		       Allocator              &alloc)
