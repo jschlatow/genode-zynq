@@ -1,0 +1,61 @@
+The ROM monitor provides a ROM module that depends on state changes of other
+ROM modules. Its designated use is to discover failure conditions and reflect
+the health state of a subsystem in the provided ROM module.
+
+Configuration
+~~~~~~~~~~~~~
+
+The configuration consists of a list of '<monitor>' nodes. Each monitor node
+refers to a ROM module containing XML-formatted data to be evaluated.
+
+A monitor node must have 'rom' attribute that specifies the name of the ROM
+module. Furthermore, the following attributes may be provided:
+
+:'timeout_ms':
+  When specified, the monitored ROM module must refresh at least within the
+  specified number of milliseconds. Otherwise, it is set into failure state.
+
+A monitor node may further comprise an arbitrary number of the following
+condition nodes. If any condition evaluates to false, the monitor is set into
+failure state.
+
+:'<present node="/path/to/node" attribute="foobar">'
+  Evaluates to true if there is any '<node>' node under '<path><to>'. If
+  'attribute' is provided, the node must also contain the specified attribute.
+
+:'<has_attribute node="/path/to/node" attribute="foobar"/>'
+  Evaluates to true if the attribute is present for all '<node>' nodes under
+  '<path><to>'.
+
+:'<has_value node="/path/to/node" attribute="foobar" value="xyz">':
+  Compares the attribute "foobar" of all '<node>' nodes under '<path><to>'
+  with "xyz". If no matching node is present or the attribute is missing, the
+  condition evaluates to true.
+
+:'<below_value node="..." attribute="..." value="42">':
+  Similar to '<has_value>' but evaluates to true if the attribute's value is
+  smaller than 42.
+
+:'<above_value node="..." attribute="..." value="42">':
+  Similar to '<has_value>' but evaluates to true if the attribute's value is
+  greater than 42.
+
+
+Output
+~~~~~~
+
+The ROM monitor provides a ROM note that reflects the state of the monitored
+input ROM modules. The module contains a '<state>' node comprising a list of
+'<okay>' and '<failed>' nodes. Each of these has a 'name' attribute that
+refers to the name of the monitored input ROM module. The state ROM is updated
+whenever one of the input ROM modules has been updated (or if a timeout
+occurred). In order to capture consecutive failures, the '<failed>' nodes
+further contain a 'count' attribute that is increased whenever the
+corresponding ROM module was updated but remains in failure state.
+
+Example:
+
+: <state>
+:   <okay name="..."/>
+:   <failed name="..." count="2"/>
+: </state>

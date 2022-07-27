@@ -1,0 +1,179 @@
+#
+# Build
+#
+
+create_boot_directory
+
+import_from_depot [depot_user]/src/[base_src] \
+                  [depot_user]/src/init \
+                  [depot_user]/src/dynamic_rom \
+                  [depot_user]/src/rom_logger
+#                  [depot_user]/src/rom_monitor
+
+build { server/rom_monitor }
+
+#
+# Config
+#
+
+set config  {
+	<config verbose="yes">
+		<parent-provides>
+			<service name="ROM"/>
+			<service name="PD"/>
+			<service name="CPU"/>
+			<service name="LOG"/>
+			<service name="IO_MEM"/>
+			<service name="IRQ"/>
+		</parent-provides>
+		<default-route>
+			<any-service> <parent/> <any-child/> </any-service>
+		</default-route>
+		<default caps="200"/>
+
+		<start name="timer">
+			<resource name="RAM" quantum="1M"/>
+			<provides><service name="Timer"/></provides>
+		</start>
+
+		<start name="dynamic_rom">
+			<resource name="RAM" quantum="2M"/>
+			<provides>
+				<service name="ROM"/>
+			</provides>
+			<config>
+				<rom name="first_input">
+					<!-- start with failure -->
+					<inline> <root>
+						<level1>
+							<level2 value1="okay"/>
+						</level1>
+						<level1>
+							<level2 value1="okay" value2="foobar"/>
+						</level1>
+					</root> </inline>
+					<sleep milliseconds="1000"/>
+
+					<!-- second failure missing attribute-->
+					<inline> <root>
+						<level1>
+							<level2 value1="okay"/>
+							<level2 value1="okay"/>
+						</level1>
+						<level1>
+							<level2 value1="okay"/>
+							<level2 value1="okay" value2="okay"/>
+							<level2               value2="foobar"/>
+						</level1>
+					</root> </inline>
+					<sleep milliseconds="1000"/>
+
+					<!-- empty ROM = third failure -->
+					<inline> </inline>
+					<sleep milliseconds="1000"/>
+
+					<!-- okay -->
+					<inline> <root>
+						<level1>
+							<level2 value1="okay"/>
+							<level2 value1="okay" value2="okay"/>
+						</level1>
+					</root> </inline>
+
+					<!-- timeout -->
+					<sleep milliseconds="4000"/>
+				</rom>
+				<rom name="second_input">
+					<!-- start with an empty ROM -->
+					<inline> </inline>
+					<sleep milliseconds="500"/>
+
+					<!-- okay -->
+					<inline> <root value="6"/> </inline>
+					<sleep milliseconds="1000"/>
+
+					<!-- first failure -->
+					<inline> <root value="11"/> </inline>
+					<sleep milliseconds="1000"/>
+
+					<!-- second failure -->
+					<inline> <root value="1"/> </inline>
+					<sleep milliseconds="1000"/>
+
+					<!-- okay -->
+					<inline> <root value="9"/> </inline>
+					<sleep milliseconds="1000"/>
+
+					<!-- failure -->
+					<inline> <root value="10"/> </inline>
+					<sleep milliseconds="1000"/>
+				</rom>
+			</config>
+		</start>
+
+		<start name="rom_monitor">
+			<resource name="RAM" quantum="2M"/>
+			<provides>
+				<service name="ROM"/>
+			</provides>
+			<config>
+				<monitor rom="first_input" timeout_ms="2000">
+					<present path="/root/level1/level2"/>
+					<has_attribute path="/root/level1/level2" attribute="value1"/>
+					<has_value path="/root/level1/level2"     attribute="value1" value="okay"/>
+					<has_value path="/root/level1/level2"     attribute="value2" value="okay"/>
+				</monitor>
+				<monitor rom="second_input">
+					<below_value path="/root" attribute="value" value="10"/>
+					<above_value path="/root" attribute="value" value="5"/>
+				</monitor>
+			</config>
+			<route>
+				<service name="ROM" label="first_input"> <child name="dynamic_rom"/> </service>
+				<service name="ROM" label="second_input"> <child name="dynamic_rom"/> </service>
+				<any-service> <parent/> <any-child/> </any-service>
+			</route>
+		</start>
+
+		<start name="rom_logger">
+			<resource name="RAM" quantum="2M"/>
+			<provides>
+				<service name="ROM"/>
+			</provides>
+			<config rom="state"/>
+			<route>
+				<service name="ROM" label="state"> <child name="rom_monitor"/> </service>
+				<any-service> <parent/> </any-service>
+			</route>
+		</start>
+
+		<!--
+		<start name="rom_logger2">
+			<binary name="rom_logger"/>
+			<resource name="RAM" quantum="2M"/>
+			<provides>
+				<service name="ROM"/>
+			</provides>
+			<config rom="first_input"/>
+			<route>
+				<service name="ROM" label="first_input"> <child name="dynamic_rom"/> </service>
+				<any-service> <parent/> </any-service>
+			</route>
+		</start>
+		-->
+
+	</config>
+}
+
+install_config $config
+
+#
+# Boot modules
+#
+
+# generic modules
+build_boot_image { rom_monitor }
+
+append qemu_args " -nographic "
+run_genode_until forever
+
