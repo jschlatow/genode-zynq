@@ -1,0 +1,130 @@
+<runtime ram="12M" caps="1000" binary="init">
+
+	<requires> <timer/> <report/> </requires>
+
+	<content>
+		<rom label="ld.lib.so"/>
+		<rom label="dynamic_rom"/>
+		<rom label="rom_monitor"/>
+		<rom label="rom_reporter"/>
+		<rom label="report_rom"/>
+		<rom label="init"/>
+	</content>
+
+	<config>
+		<parent-provides>
+			<service name="ROM"/>
+			<service name="IRQ"/>
+			<service name="IO_MEM"/>
+			<service name="IO_PORT"/>
+			<service name="PD"/>
+			<service name="RM"/>
+			<service name="CPU"/>
+			<service name="LOG"/>
+			<service name="Timer"/>
+			<service name="Report"/>
+		</parent-provides>
+		<default-route>
+			<any-service> <parent/> <any-child/> </any-service>
+		</default-route>
+		<default caps="100"/>
+
+		<!-- report rom_monitor state to parent -->
+		<start name="rom_reporter">
+			<resource name="RAM" quantum="2M"/>
+			<config> <rom label="state"/> </config>
+			<route>
+				<service name="ROM" label="state"> <child name="rom_monitor"/> </service>
+				<service name="Report" label="state"> <parent label="state"/> </service>
+				<any-service> <parent/> </any-service>
+			</route>
+		</start>
+
+		<!-- monitoring components -->
+		<start name="rom_monitor">
+			<resource name="RAM" quantum="2M"/>
+			<provides>
+				<service name="ROM"/>
+			</provides>
+			<config>
+				<monitor rom="input" timeout_ms="3000">
+					<present path="/root/foo"/>
+				</monitor>
+				<monitor rom="init_state">
+					<present path="/state"/>
+					<has_value path="/state/child" attribute="skipped_heartbeats" value="0"/>
+				</monitor>
+			</config>
+			<route>
+				<service name="ROM" label="input">      <child name="monitored"/> </service>
+				<service name="ROM" label="init_state"> <child name="report_rom"/> </service>
+				<any-service> <parent/> <any-child/> </any-service>
+			</route>
+		</start>
+
+		<!-- propagate init state reports to rom_monitor -->
+		<start name="report_rom">
+			<resource name="RAM" quantum="2M"/>
+			<provides>
+				<service name="ROM"/>
+				<service name="Report"/>
+			</provides>
+			<config verbose="no">
+				<policy label="rom_monitor -> init_state"
+					report="monitored -> state"/>
+			</config>
+		</start>
+
+		<!-- sub-init containing the monitored component(s) -->
+		<start name="monitored" caps="500">
+			<binary name="init"/>
+			<resource name="RAM" quantum="4M"/>
+			<provides>
+				<service name="ROM"/>
+			</provides>
+			<config>
+				<parent-provides>
+					<service name="ROM"/>
+					<service name="IRQ"/>
+					<service name="IO_MEM"/>
+					<service name="IO_PORT"/>
+					<service name="PD"/>
+					<service name="RM"/>
+					<service name="CPU"/>
+					<service name="LOG"/>
+					<service name="Timer"/>
+				</parent-provides>
+				<default-route>
+					<any-service> <parent/> </any-service>
+				</default-route>
+				<default caps="100"/>
+				<heartbeat rate_ms="1000"/>
+				<report/>
+				<service name="ROM">
+					<policy label_suffix="-> input"> <child name="dynamic_rom"/> </policy>
+				</service>
+
+				<start name="dynamic_rom">
+					<heartbeat/>
+					<resource name="RAM" quantum="2M"/>
+					<provides>
+						<service name="ROM"/>
+					</provides>
+					<config>
+						<rom name="input">
+							<inline> <root> <foo/> </root> </inline>
+							<sleep milliseconds="5000"/>
+
+							<inline> <root> <foo/> <bar/> </root> </inline>
+							<sleep milliseconds="30000"/>
+						</rom>
+					</config>
+				</start>
+			</config>
+			<route>
+				<service name="Report"> <child name="report_rom"/> </service>
+				<any-service> <parent/> </any-service>
+			</route>
+		</start>
+	</config>
+</runtime>

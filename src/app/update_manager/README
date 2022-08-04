@@ -1,0 +1,77 @@
+The update manager takes care of a robust deployment and execution of depot
+packages as required, e.g., in non-interactive OTA (over-the-air) update
+scenarios. It is provided with a set of applications. For each application,
+a list of depot package variants can be specified. The update manager is going
+to deploy these variants in descending priority starting with the first variant.
+If the deployment or execution of a variant fails, the update manager will
+deploy the next variant in the list.
+In order to detect execution failures, a depot package may report its
+XML-formatted state in form of a 'state' report. Any '<failed>' node within
+this report is interpreted as a failure.
+
+The update manager is intended to be used in conjunction with the depot
+download and depot deploy components. It therefore generates an 'installation'
+report for the depot download component and consumes a 'download_state' ROM.
+Furthermore, it generates an 'deploy.config' report for the depot deploy
+component.
+
+
+Configuration
+~~~~~~~~~~~~~
+
+The configuration comprises a '<static>' node, a '<common_routes>' node, and
+a list of '<app>' nodes. The former two are passed to the 'deploy.config'
+without modifications. For each '<app>' node, a single '<variant>' is selected
+(in descending priority) and passed as a '<start>' node to the 'deploy.config'.
+
+! <config arch="x86_64">
+!   <static>
+!     ...
+!   </static>
+!
+!   <common_routes>
+!     ...
+!   </common_routes>
+!
+!   <app name="foobar">
+!     <variant pkg="foo/pkg/baz/2000-01-01">
+!       ...
+!     </variant>
+!     <variant pkg="foo/pkg/bar/1970-01-01" retry="2">
+!       ...
+!     </variant>
+!   </app>
+! </config>
+
+The '<config>' node accepts the following attributes:
+
+:'arch':
+  (mandatory) Specifies the target architecture of the deployed packaged.
+  Passed to the 'deploy.config' and 'installation' reports.
+
+
+Each '<app>' node accepts the following attributes:
+
+:'name':
+  (mandatory) Specifies the name as which the variants are deployed.
+
+
+The following attributes are accepted by the '<variant>' nodes:
+
+:'pkg':
+  (mandatory) The depot archive to be deployed.
+
+:'retry':
+  (optional) Specifies the number retries (re-deployments) of this variant
+  after an execution failure before continuing with the next variant.
+  Default: 0
+
+:'delay_ms':
+  (optional) Specifies a delay in milliseconds after which the 'state' report
+  must be present at the latest. If not, the next variant is deployed.
+
+
+Example
+~~~~~~~
+
+A usage example is found in 'run/update_manager.run'.
