@@ -632,6 +632,29 @@ void Ad::Ad9361::tx_config(unsigned bandwidth_hz, unsigned sampling_hz, unsigned
 }
 
 
+void Ad::Ad9361::rx_gain(const char *gain, unsigned ch)
+{
+	ad9361_rf_phy *phy = _ad9361_config().ad9361_phy;
+
+	/* set manual mode */
+	ad9361_set_rx_gain_control_mode(phy, (int8_t)ch, RF_GAIN_MGC);
+
+	/**
+	 * convert string argument to float and take the integer part
+	 * (copied from iio::set_hardwaregain)
+	 */
+	int32_t gainval = (int32_t)strtof(gain, NULL);
+
+	struct rf_rx_gain rx_gain = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	rx_gain.gain_db = gainval;
+
+	if (0 > ad9361_set_rx_gain(phy,
+	                           ad9361_1rx1tx_channel_map(phy, false, ch + 1),
+	                           &rx_gain))
+		error("Unable to set rx gain");
+}
+
+
 void Ad::Ad9361::allocate_buffers(size_t rx_bytes, size_t tx_bytes)
 {
 	/* construct dmac devices */

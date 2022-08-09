@@ -87,6 +87,8 @@ class Ad::Ad9361
 		void rx_config(unsigned bw_hz, unsigned fs_hz, unsigned lo_hz);
 		void tx_config(unsigned bw_hz, unsigned fs_hz, unsigned lo_hz);
 
+		void rx_gain(const char *gain, unsigned ch);
+
 		void loopback_mode(Loopback_mode mode);
 };
 
