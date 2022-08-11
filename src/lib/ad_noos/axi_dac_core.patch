@@ -1,0 +1,11 @@
+--- a/drivers/axi_core/axi_dac_core/axi_dac_core.c
++++ b/drivers/axi_core/axi_dac_core/axi_dac_core.c
+@@ -830,7 +830,7 @@
+ 		goto error;
+ 	}
+ 
+-	axi_dac_write(dac, AXI_DAC_REG_RATECNTRL, AXI_DAC_RATE(3));
++	axi_dac_write(dac, AXI_DAC_REG_RATECNTRL, AXI_DAC_RATE(0));
+ 
+ 	axi_dac_read(dac, AXI_DAC_REG_CLK_FREQ, &freq);
+ 	axi_dac_read(dac, AXI_DAC_REG_CLK_RATIO, &ratio);
