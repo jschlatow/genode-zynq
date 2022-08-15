@@ -20,6 +20,7 @@
 #include <util/xml_node.h>
 #include <platform_session/device.h>
 #include <drivers/dmac.h>
+#include <drivers/gpio.h>
 
 namespace Ad {
 	using namespace Genode;
@@ -90,6 +91,8 @@ class Ad::Ad9361
 		void rx_gain(const char *gain, unsigned ch);
 
 		void loopback_mode(Loopback_mode mode);
+
+		Gpio::Zynq_regs &gpio();
 };
 
 #endif /* _INCLUDE__AD9361__AD9361_H_ */

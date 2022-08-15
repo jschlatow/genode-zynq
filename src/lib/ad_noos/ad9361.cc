@@ -670,6 +670,10 @@ void Ad::Ad9361::allocate_buffers(size_t rx_bytes, size_t tx_bytes)
 }
 
 
+Gpio::Zynq_regs &Ad::Ad9361::gpio() {
+	return Ad::platform().gpio(); }
+
+
 Ad::Ad9361::Ad9361(Genode::Env &env)
 : _env(env),
   _platform(Ad::platform(&env).platform())
