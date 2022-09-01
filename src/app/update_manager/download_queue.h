@@ -97,6 +97,13 @@ struct Update_manager::Download_queue : Genode::Noncopyable
 
 	void apply_update_state(Xml_node state)
 	{
+		/* if state is empty, assume everything has been downloaded */
+		if (!state.has_sub_node("archive")) {
+			_downloads.for_each([&] (Download &download) {
+				download.state = Download::State::DONE;
+			});
+		}
+
 		/* 'elem' may be of type 'index' or 'archive' */
 		state.for_each_sub_node([&] (Xml_node elem) {
 
