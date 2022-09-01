@@ -394,7 +394,8 @@ void Update_manager::App::apply_installation()
 	});
 
 	_variants.with_current_variant([&] (Variant &v) {
-		_timeout.schedule(Genode::Microseconds { v.delay_ms() * 1000U });
+		if (v.delay_ms())
+			_timeout.schedule(Genode::Microseconds { v.delay_ms() * 1000U });
 	});
 }
 
