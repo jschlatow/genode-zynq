@@ -58,7 +58,6 @@ struct Update_manager::Main : Deploy
 
 	Expanding_reporter _installation_reporter      { _env, "installation", "installation" };
 	Expanding_reporter _deploy_reporter            { _env, "config",       "deploy.config" };
-	Expanding_reporter _report_rom_config_reporter { _env, "config",       "report_rom.config" };
 
 	void _gen_deploy_config()
 	{
@@ -94,12 +93,6 @@ struct Update_manager::Main : Deploy
 		/* apply new config */
 		_config.update();
 		_apps.apply_config(_config.xml());
-
-		/* generate config for monitor_report_rom */
-		_report_rom_config_reporter.generate([&] (Xml_generator &xml) {
-			xml.attribute("verbose", "yes");
-			_apps.gen_monitor_report_config(xml);
-		});
 
 		/* generate installation report from download queue */
 		_installation_reporter.generate([&] (Xml_generator &xml) {

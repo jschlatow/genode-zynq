@@ -109,16 +109,6 @@ class Update_manager::Apps
 				app.gen_start_entries(xml);
 			});
 		}
-
-		void gen_monitor_report_config(Xml_generator &xml) const
-		{
-			_apps.for_each([&] (App const &app) {
-				xml.node("policy", [&] () {
-					xml.attribute("label_suffix", Genode::String<100>(app.name(), " -> state"));
-					xml.attribute("report",       Genode::String<100>("dynamic -> ", app.name(), " -> state"));
-				});
-			});
-		}
 };
 
 #endif /* _APPS_H_ */
