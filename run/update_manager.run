@@ -263,11 +263,16 @@ grep_output {\[init -\> update_manager}
 compare_output_to {
 [init -> update_manager] add to download queue: jschlatow/pkg/update_manager_example/2022-08-09
 [init -> update_manager] add to download queue: jschlatow/pkg/update_manager_example/2022-08-09
+[init -> update_manager] app1: deploying jschlatow/pkg/update_manager_example/2022-08-09
+[init -> update_manager] app1: deploying jschlatow/pkg/update_manager_example/2022-08-09
 [init -> update_manager] Error: app1: startup failed
 [init -> update_manager] Warning: app1: execution failure in jschlatow/pkg/update_manager_example/2022-08-09
 [init -> update_manager] Warning: app1: switching to jschlatow/pkg/update_manager_example/2022-08-09
+[init -> update_manager] app1: deploying jschlatow/pkg/update_manager_example/2022-08-09
 [init -> update_manager] Warning: app1: execution failure in jschlatow/pkg/update_manager_example/2022-08-09
+[init -> update_manager] app1: deploying jschlatow/pkg/update_manager_example/2022-08-09
 [init -> update_manager] Warning: app1: execution failure in jschlatow/pkg/update_manager_example/2022-08-09
+[init -> update_manager] app1: deploying jschlatow/pkg/update_manager_example/2022-08-09
 [init -> update_manager] Warning: app1: execution failure in jschlatow/pkg/update_manager_example/2022-08-09
 [init -> update_manager] Error: app1: stopped
 }

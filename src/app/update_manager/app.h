@@ -413,7 +413,9 @@ void Update_manager::App::gen_start_entries(Xml_generator &xml) const
 			v.append_xml_content(xml);
 		});
 
+		Genode::log(_name, ": deploying ", v.pkg());
 	});
+
 }
 
 #endif /* _APP_H_ */
