@@ -38,6 +38,7 @@ namespace Update_manager {
 	using Genode::Attached_rom_dataspace;
 
 	struct Deploy;
+	struct Update_state_reporter;
 	class Variant;
 	class Variants;
 	class App;
@@ -50,6 +51,15 @@ namespace Update_manager {
 struct Update_manager::Deploy : Genode::Interface
 {
 	virtual void trigger() = 0;
+};
+
+
+/**
+ * Interface for letting Main know we need to regenerate the update state report
+ */
+struct Update_manager::Update_state_reporter : Genode::Interface
+{
+	virtual void update() = 0;
 };
 
 
@@ -235,6 +245,12 @@ class Update_manager::App : public Genode::List_model<App>::Element
 	public:
 		using Name = Report::Consumer::Name;
 
+		enum State {
+			STARTING,
+			RUNNING,
+			FAILED
+		};
+
 	private:
 
 		Genode::Env                           &_env;
@@ -243,6 +259,8 @@ class Update_manager::App : public Genode::List_model<App>::Element
 		Name                                   _name;
 		Download_queue                        &_download_queue;
 		Timer::One_shot_timeout<App>           _timeout;
+		State                                  _state { STARTING };
+		Update_state_reporter                 &_update_state_reporter;
 
 		Constructible<Buffered_xml>            _app_xml { };
 
@@ -285,21 +303,23 @@ class Update_manager::App : public Genode::List_model<App>::Element
 		/**
 		 * Constructor
 		 */
-		App(Genode::Env       &env,
-		    Allocator         &alloc,
-		    Timer::Connection &timer,
-		    Deploy            &deploy,
-		    Xml_node const    &app_node,
-		    Download_queue    &download_queue,
-		    Report::Pool      &state_report_pool)
+		App(Genode::Env           &env,
+		    Allocator             &alloc,
+		    Timer::Connection     &timer,
+		    Deploy                &deploy,
+		    Xml_node const        &app_node,
+		    Download_queue        &download_queue,
+		    Report::Pool          &state_report_pool,
+		    Update_state_reporter &update_state_reporter)
 		:
-			_env            { env },
-			_alloc          { alloc },
-			_deploy         { deploy },
-			_name           { app_node.attribute_value("name", Name()) },
-			_download_queue { download_queue },
-			_timeout        { timer, *this, &App::_handle_timeout },
-			_consumer       { state_report_pool, *this }
+			_env                   { env },
+			_alloc                 { alloc },
+			_deploy                { deploy },
+			_name                  { app_node.attribute_value("name", Name()) },
+			_download_queue        { download_queue },
+			_timeout               { timer, *this, &App::_handle_timeout },
+			_update_state_reporter { update_state_reporter },
+			_consumer              { state_report_pool, *this }
 		{
 			apply_config(app_node);
 		}
@@ -309,6 +329,8 @@ class Update_manager::App : public Genode::List_model<App>::Element
 		void apply_installation();
 
 		void gen_start_entries(Xml_generator &xml) const;
+
+		void gen_state_entry(Xml_generator &xml) const;
 
 		/**
 		 * Linked_object interface
@@ -322,8 +344,15 @@ class Update_manager::App : public Genode::List_model<App>::Element
 		{
 			_timeout.discard();
 
+			State old_state = _state;
+
 			if (xml.has_sub_node("failed"))
 				_handle_error();
+			else
+				_state = RUNNING;
+
+			if (old_state != _state)
+				_update_state_reporter.update();
 		}
 };
 
@@ -353,6 +382,8 @@ void Update_manager::App::apply_config(Xml_node const &app_node)
 
 void Update_manager::App::_handle_error()
 {
+	_state = State::FAILED;
+
 	_variants.with_current_variant([&] (Variant &v) {
 		Genode::warning(_name, ": execution failure in ", v.pkg());
 	});
@@ -415,7 +446,30 @@ void Update_manager::App::gen_start_entries(Xml_generator &xml) const
 
 		Genode::log(_name, ": deploying ", v.pkg());
 	});
+}
 
+
+void Update_manager::App::gen_state_entry(Xml_generator &xml) const
+{
+	_variants.with_current_variant([&] (Variant const &v) {
+		xml.node("app", [&] () {
+			xml.attribute("name", _name);
+			xml.attribute("variant", v.pkg());
+			xml.attribute("version", v.version());
+
+			switch (_state) {
+			case State::STARTING:
+				xml.attribute("state", "STARTING");
+				break;
+			case State::RUNNING:
+				xml.attribute("state", "RUNNING");
+				break;
+			case State::FAILED:
+				xml.attribute("state", "FAILED");
+				break;
+			}
+		});
+	});
 }
 
 #endif /* _APP_H_ */

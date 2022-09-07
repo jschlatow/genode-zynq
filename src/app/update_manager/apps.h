@@ -35,32 +35,36 @@ class Update_manager::Apps
 {
 	private:
 
-		Genode::Env       &_env;
-		Allocator         &_alloc;
-		Timer::Connection &_timer;
-		Deploy            &_deploy;
-		Download_queue    &_download_queue;
-		Report::Pool      &_state_report_pool;
+		Genode::Env           &_env;
+		Allocator             &_alloc;
+		Timer::Connection     &_timer;
+		Deploy                &_deploy;
+		Download_queue        &_download_queue;
+		Report::Pool          &_state_report_pool;
+		Update_state_reporter &_update_state_reporter;
 
 		List_model<App>    _apps { };
 
 		struct Model_update_policy : List_model<App>::Update_policy
 		{
-			Genode::Env       &_env;
-			Allocator         &_alloc;
-			Timer::Connection &_timer;
-			Deploy            &_deploy;
-			Download_queue    &_download_queue;
-			Report::Pool      &_state_report_pool;
+			Genode::Env           &_env;
+			Allocator             &_alloc;
+			Timer::Connection     &_timer;
+			Deploy                &_deploy;
+			Download_queue        &_download_queue;
+			Report::Pool          &_state_report_pool;
+			Update_state_reporter &_update_state_reporter;
 
-			Model_update_policy(Genode::Env       &env,
-			                    Allocator         &alloc,
-			                    Timer::Connection &timer,
-			                    Deploy            &deploy,
-			                    Download_queue    &download_queue,
-			                    Report::Pool      &state_report_pool)
+			Model_update_policy(Genode::Env           &env,
+			                    Allocator             &alloc,
+			                    Timer::Connection     &timer,
+			                    Deploy                &deploy,
+			                    Download_queue        &download_queue,
+			                    Report::Pool          &state_report_pool,
+			                    Update_state_reporter &update_state_reporter)
 			: _env(env), _alloc(alloc), _timer(timer), _deploy(deploy),
-			 _download_queue(download_queue), _state_report_pool(state_report_pool)
+			 _download_queue(download_queue), _state_report_pool(state_report_pool),
+			 _update_state_reporter(update_state_reporter)
 			{ }
 
 			void destroy_element(App &app) {
@@ -68,7 +72,8 @@ class Update_manager::Apps
 
 			App &create_element(Xml_node node) {
 				return *new (_alloc) App(_env, _alloc, _timer, _deploy,
-				                         node, _download_queue, _state_report_pool);
+				                         node, _download_queue, _state_report_pool,
+				                         _update_state_reporter);
 			}
 
 			void update_element(App &app, Xml_node node) {
@@ -79,18 +84,22 @@ class Update_manager::Apps
 
 			static bool node_is_element(Xml_node node) { return node.has_type("app"); }
 
-		} _model_update_policy { _env, _alloc, _timer, _deploy, _download_queue, _state_report_pool };
+		} _model_update_policy { _env, _alloc, _timer, _deploy, _download_queue,
+		                         _state_report_pool, _update_state_reporter };
+
 
 	public:
 
-		Apps(Genode::Env       &env,
-		     Allocator         &alloc,
-		     Timer::Connection &timer,
-		     Deploy            &deploy,
-		     Download_queue    &download_queue,
-		     Report::Pool      &state_report_pool)
+		Apps(Genode::Env           &env,
+		     Allocator             &alloc,
+		     Timer::Connection     &timer,
+		     Deploy                &deploy,
+		     Download_queue        &download_queue,
+		     Report::Pool          &state_report_pool,
+		     Update_state_reporter &update_state_reporter)
 		: _env(env), _alloc(alloc), _timer(timer), _deploy(deploy),
-		  _download_queue(download_queue), _state_report_pool(state_report_pool)
+		  _download_queue(download_queue), _state_report_pool(state_report_pool),
+		  _update_state_reporter(update_state_reporter)
 		{ }
 
 		void apply_config(Xml_node config) {
@@ -107,6 +116,13 @@ class Update_manager::Apps
 		{
 			_apps.for_each([&] (App &app) {
 				app.gen_start_entries(xml);
+			});
+		}
+
+		void gen_state_entries(Xml_generator &xml)
+		{
+			_apps.for_each([&] (App &app) {
+				app.gen_state_entry(xml);
 			});
 		}
 };

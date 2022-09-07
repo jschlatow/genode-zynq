@@ -30,7 +30,7 @@ namespace Update_manager {
 }
 
 
-struct Update_manager::Main : Deploy
+struct Update_manager::Main : Deploy, Update_state_reporter
 {
 	Genode::Env       &_env;
 
@@ -42,7 +42,7 @@ struct Update_manager::Main : Deploy
 
 	Report::Pool       _state_report_pool { };
 
-	Apps               _apps              { _env, _heap, _timer, *this, _download_queue, _state_report_pool };
+	Apps               _apps              { _env, _heap, _timer, *this, _download_queue, _state_report_pool, *this };
 
 	Report::Root       _report_root       { _env, _heap, _state_report_pool };
 
@@ -58,6 +58,7 @@ struct Update_manager::Main : Deploy
 
 	Expanding_reporter _installation_reporter      { _env, "installation", "installation" };
 	Expanding_reporter _deploy_reporter            { _env, "config",       "deploy.config" };
+	Expanding_reporter _update_state_reporter      { _env, "state",        "state" };
 
 	void _gen_deploy_config()
 	{
@@ -131,6 +132,16 @@ struct Update_manager::Main : Deploy
 	 * Deploy interface
 	 */
 	void trigger() override { _gen_deploy_config(); }
+
+	/**
+	 * Update_state_reporter interface
+	 */
+	void update() override
+	{
+		_update_state_reporter.generate([&] (Xml_generator &xml) {
+			_apps.gen_state_entries(xml);
+		});
+	}
 };
 
 
