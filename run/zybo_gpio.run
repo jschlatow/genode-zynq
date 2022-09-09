@@ -1,0 +1,87 @@
+create_boot_directory
+
+import_from_depot [depot_user]/src/[base_src] \
+                  [depot_user]/src/init \
+                  [depot_user]/src/zynq_platform_drv \
+                  [depot_user]/raw/[board]-devices
+
+build { drivers/pin/zynq
+        test/zybo_gpio }
+
+install_config {
+	<config>
+		<parent-provides>
+			<service name="LOG"/>
+			<service name="PD"/>
+			<service name="CPU"/>
+			<service name="ROM"/>
+			<service name="IO_MEM"/>
+			<service name="IRQ"/>
+		</parent-provides>
+
+		<default caps="100"/>
+
+		<start name="timer">
+			<resource name="RAM" quantum="1M"/>
+			<route> <any-service> <parent/> </any-service> </route>
+			<provides> <service name="Timer"/> </provides>
+		</start>
+
+		<start name="zynq_platform_drv" managing_system="yes">
+			<resource name="RAM" quantum="1M"/>
+			<provides><service name="Platform"/></provides>
+			<config>
+				<policy label="zynq_pin_drv -> " info="yes">
+					<device name="gpio0"/>
+				</policy>
+			</config>
+			<route>
+				<any-service> <parent/> </any-service>
+			</route>
+		</start>
+
+		<start name="zynq_pin_drv">
+			<resource name="RAM" quantum="1M"/>
+			<provides>
+				<service name="Pin_state"/>
+				<service name="Pin_control"/>
+				<service name="IRQ"/>
+			</provides>
+			<route>
+				<service name="ROM"> <parent/> </service>
+				<service name="CPU"> <parent/> </service>
+				<service name="PD">  <parent/> </service>
+				<service name="LOG"> <parent/> </service>
+				<service name="Platform"> <child name="zynq_platform_drv"/> </service>
+			</route>
+			<config>
+				<in  name="Btn4" bank="1" index="18" irq="rising"/>
+				<in  name="Btn5" bank="1" index="19" irq="rising"/>
+				<out name="Led4" bank="0" index="7"  default="on"/>
+				<policy label_prefix="test-zybo_gpio -> Btn4" pin="Btn4"/>
+				<policy label_prefix="test-zybo_gpio -> Btn5" pin="Btn5"/>
+				<policy label_prefix="test-zybo_gpio -> Led4" pin="Led4"/>
+				<policy label="test-zybo_gpio -> " pin="Btn4"/>
+			</config>
+		</start>
+
+		<start name="test-zybo_gpio">
+			<resource name="RAM" quantum="1M"/>
+			<route>
+				<service name="Pin_control"> <child name="zynq_pin_drv"/> </service>
+				<service name="Pin_state">   <child name="zynq_pin_drv"/> </service>
+				<service name="IRQ">         <child name="zynq_pin_drv"/> </service>
+				<service name="ROM"> <parent/> </service>
+				<service name="CPU"> <parent/> </service>
+				<service name="PD">  <parent/> </service>
+				<service name="LOG"> <parent/> </service>
+			</route>
+			<config/>
+		</start>
+
+	</config>
+}
+
+build_boot_image { zynq_pin_drv test-zybo_gpio }
+
+run_genode_until forever
