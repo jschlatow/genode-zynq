@@ -1,0 +1,235 @@
+if { ![have_board zynq_zybo_z7] } {
+	puts "Run script only support BOARD=zynq_zybo_z7"
+	exit 0
+}
+
+create_boot_directory
+
+import_from_depot [depot_user]/src/[base_src] \
+                  [depot_user]/pkg/drivers_fpga-zynq \
+                  [depot_user]/src/driver_manager-zynq \
+                  [depot_user]/src/init \
+                  [depot_user]/src/report_rom \
+                  [depot_user]/src/rom_filter \
+                  [depot_user]/src/vfs \
+                  [depot_user]/raw/zybo_gpio_demo \
+                  [depot_user]/src/zynq_platform_drv \
+                  jschlatow/src/zybo_z720_rgb-bitstream/2022-09-29 \
+                  jschlatow/src/zybo_z720_gpio-bitstream/2022-09-27 \
+                  [depot_user]/raw/[board]-devices
+
+build { drivers/pin/zynq
+        app/zybo_gpio_demo }
+
+install_config {
+	<config>
+		<parent-provides>
+			<service name="LOG"/>
+			<service name="PD"/>
+			<service name="CPU"/>
+			<service name="ROM"/>
+			<service name="IO_MEM"/>
+			<service name="IRQ"/>
+		</parent-provides>
+
+		<default caps="100"/>
+
+		<start name="timer">
+			<resource name="RAM" quantum="1M"/>
+			<route> <any-service> <parent/> </any-service> </route>
+			<provides> <service name="Timer"/> </provides>
+		</start>
+
+		<start name="vfs">
+			<resource name="RAM" quantum="8M"/>
+			<provides><service name="File_system"/></provides>
+			<route>
+				<service name="ROM" label="fpga.config"> <child name="rom_filter"/> </service>
+				<any-service> <parent/> </any-service>
+			</route>
+			<config>
+				<vfs>
+					<rom name="config" label="fpga.config"/>
+					<rom name="zybo_z720_gpio-bitstream.bit"/>
+					<rom name="zybo_z720_rgb-bitstream.bit"/>
+				</vfs>
+				<default-policy root="/" writeable="no"/>
+			</config>
+		</start>
+
+		<start name="platform_drv" caps="1000" managing_system="yes">
+			<binary name="init"/>
+			<resource name="RAM" quantum="24M"/>
+			<provides> <service name="Platform"/> </provides>
+			<route>
+				<service name="ROM" label="config"> <parent label="drivers.config"/> </service>
+				<any-service> <parent/> <any-child/> </any-service>
+			</route>
+		</start>
+
+		<start name="zynq_pin_drv">
+			<resource name="RAM" quantum="1M"/>
+			<provides>
+				<service name="Pin_state"/>
+				<service name="Pin_control"/>
+				<service name="IRQ"/>
+			</provides>
+			<route>
+				<service name="ROM"> <parent/> </service>
+				<service name="CPU"> <parent/> </service>
+				<service name="PD">  <parent/> </service>
+				<service name="LOG"> <parent/> </service>
+				<service name="Platform"> <child name="platform_drv"/> </service>
+			</route>
+			<config>
+				<in  name="Sw0"  bank="2" index="0" irq="edges"/>
+				<in  name="Sw1"  bank="2" index="1" irq="edges"/>
+				<in  name="Sw2"  bank="2" index="2" irq="edges"/>
+				<in  name="Sw3"  bank="2" index="3" irq="edges"/>
+				<in  name="Btn0" bank="2" index="4" irq="edges"/>
+				<in  name="Btn1" bank="2" index="5" irq="edges"/>
+				<in  name="Btn2" bank="2" index="6" irq="edges"/>
+				<in  name="Btn3" bank="2" index="7" irq="edges"/>
+				<out name="Led0" bank="2" index="8"  default="off"/>
+				<out name="Led1" bank="2" index="9"  default="off"/>
+				<out name="Led2" bank="2" index="10" default="off"/>
+				<out name="Led3" bank="2" index="11" default="off"/>
+
+				<in  name="Btn4" bank="1" index="18" irq="rising"/>
+				<in  name="Btn5" bank="1" index="19" irq="rising"/>
+				<out name="Led4" bank="0" index="7"  default="on"/>
+
+				<policy label="zybo_gpio_demo_sw -> Sw0"  pin="Sw0"/>
+				<policy label="zybo_gpio_demo_sw -> Sw1"  pin="Sw1"/>
+				<policy label="zybo_gpio_demo_sw -> Sw2"  pin="Sw2"/>
+				<policy label="zybo_gpio_demo_sw -> Sw3"  pin="Sw3"/>
+				<policy label="dynamic_drivers -> zybo_gpio_demo_rgb -> Btn0" pin="Btn0"/>
+				<policy label="dynamic_drivers -> zybo_gpio_demo_rgb -> Btn1" pin="Btn1"/>
+				<policy label="dynamic_drivers -> zybo_gpio_demo_rgb -> Btn2" pin="Btn2"/>
+				<policy label="dynamic_drivers -> zybo_gpio_demo_rgb -> Btn3" pin="Btn3"/>
+				<policy label="zybo_gpio_demo_mio -> Btn4" pin="Btn4"/>
+				<policy label="zybo_gpio_demo_mio -> Btn5" pin="Btn5"/>
+				<policy label="zybo_gpio_demo_sw -> Led0" pin="Led0"/>
+				<policy label="zybo_gpio_demo_sw -> Led1" pin="Led1"/>
+				<policy label="zybo_gpio_demo_sw -> Led2" pin="Led2"/>
+				<policy label="zybo_gpio_demo_sw -> Led3" pin="Led3"/>
+				<policy label="zybo_gpio_demo_mio -> Led4" pin="Led4"/>
+			</config>
+		</start>
+
+		<start name="zybo_gpio_demo_mio" caps="200">
+			<resource name="RAM" quantum="1M"/>
+			<route>
+				<service name="Pin_control"> <child name="zynq_pin_drv"/> </service>
+				<service name="Pin_state">   <child name="zynq_pin_drv"/> </service>
+				<service name="IRQ">         <child name="zynq_pin_drv"/> </service>
+				<service name="Report">      <child name="report_rom"/> </service>
+				<service name="ROM"> <parent/> </service>
+				<service name="CPU"> <parent/> </service>
+				<service name="PD">  <parent/> </service>
+				<service name="LOG"> <parent/> </service>
+			</route>
+			<config/>
+		</start>
+
+		<start name="zybo_gpio_demo_sw" caps="200">
+			<resource name="RAM" quantum="1M"/>
+			<route>
+				<service name="Pin_control"> <child name="zynq_pin_drv"/> </service>
+				<service name="Pin_state">   <child name="zynq_pin_drv"/> </service>
+				<service name="IRQ">         <child name="zynq_pin_drv"/> </service>
+				<service name="Report">      <child name="report_rom"/> </service>
+				<service name="ROM"> <parent/> </service>
+				<service name="CPU"> <parent/> </service>
+				<service name="PD">  <parent/> </service>
+				<service name="LOG"> <parent/> </service>
+			</route>
+			<config/>
+		</start>
+
+		<start name="report_rom">
+			<resource name="RAM" quantum="1M"/>
+			<provides>
+				<service name="ROM"/>
+				<service name="Report"/>
+			</provides>
+			<route>
+				<service name="ROM"> <parent/> </service>
+				<service name="CPU"> <parent/> </service>
+				<service name="PD">  <parent/> </service>
+				<service name="LOG"> <parent/> </service>
+			</route>
+			<config verbose="no">
+				<policy label="rom_filter -> state"
+				        report="zybo_gpio_demo_mio -> state"/>
+				<policy report="platform_drv -> platform_drv -> devices"
+				        label="zynq_driver_manager -> devices"/>
+				<policy report="zynq_driver_manager -> init.config"
+				        label="dynamic_drivers -> config"/>
+			</config>
+		</start>
+
+		<start name="rom_filter">
+			<resource name="RAM" quantum="1M"/>
+			<provides>
+				<service name="ROM"/>
+			</provides>
+			<route>
+				<service name="ROM" label="state"> <child name="report_rom"/> </service>
+				<service name="ROM"> <parent/> </service>
+				<service name="CPU"> <parent/> </service>
+				<service name="PD">  <parent/> </service>
+				<service name="LOG"> <parent/> </service>
+			</route>
+			<config>
+				<input name="state">
+					<attribute name="value"/>
+				</input>
+
+				<output node="config">
+					<node type="bitstream">
+						<if>
+							<has_value input="state" value="yes"/>
+							<then>
+								<attribute name="name" value="zybo_z720_rgb-bitstream.bit"/>
+							</then>
+							<else>
+								<attribute name="name" value="zybo_z720_gpio-bitstream.bit"/>
+							</else>
+						</if>
+					</node>
+				</output>
+			</config>
+		</start>
+
+		<!-- automatically start RGB LED component once bitstream has been loaded -->
+		<start name="zynq_driver_manager">
+			<resource name="RAM" quantum="2M"/>
+			<route>
+				<service name="ROM" label="devices"> <child name="report_rom"/> </service>
+				<any-service> <parent/> <any-child/> </any-service>
+			</route>
+			<config>
+				<driver name="zybo_gpio_demo_rgb" device="my_rgbleds">
+					<binary name="zybo_gpio_demo_rgb"/>
+					<resource name="RAM" quantum="2M"/>
+				</driver>
+			</config>
+		</start>
+
+		<start name="dynamic_drivers" caps="500">
+			<binary name="init"/>
+			<resource name="RAM" quantum="5M"/>
+			<route>
+				<service name="ROM" label="config"> <child name="report_rom"/> </service>
+				<service name="IRQ"> <child name="zynq_pin_drv"/> </service>
+				<any-service> <parent/> <any-child/> </any-service>
+			</route>
+		</start>
+
+	</config>
+}
+
+build_boot_image { zynq_pin_drv zybo_gpio_demo_mio zybo_gpio_demo_sw zybo_gpio_demo_rgb }
+
+run_genode_until forever

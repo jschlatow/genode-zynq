@@ -1,3 +1,8 @@
+if { ![have_board zynq_zybo_z7] } {
+	puts "Run script only support BOARD=zynq_zybo_z7"
+	exit 0
+}
+
 create_boot_directory
 
 import_from_depot [depot_user]/src/[base_src] \

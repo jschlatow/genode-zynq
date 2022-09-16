@@ -1,0 +1,9 @@
+<config>
+	<report devices="yes"/>
+	<policy label="zynq_pin_drv -> " info="yes">
+		<device name="gpio0"/>
+	</policy>
+	<policy label="dynamic_drivers -> zybo_gpio_demo_rgb -> ">
+		<device name="rgbleds"/>
+	</policy>
+</config>
