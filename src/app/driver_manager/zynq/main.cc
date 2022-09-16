@@ -24,6 +24,9 @@
 #include <platform_session/platform_session.h>
 #include <nic_session/nic_session.h>
 #include <uplink_session/uplink_session.h>
+#include <pin_control_session/pin_control_session.h>
+#include <pin_state_session/pin_state_session.h>
+#include <irq_session/irq_session.h>
 
 namespace Driver_manager {
 	using namespace Genode;
@@ -204,6 +207,9 @@ void Driver_manager::Main::_generate_init_config(Reporter &init_config) const
 			_gen_parent_service_xml(xml, Report::Session::service_name());
 			_gen_parent_service_xml(xml, Uplink::Session::service_name());
 			_gen_parent_service_xml(xml, Nic::Session::service_name());
+			_gen_parent_service_xml(xml, Pin_state::Session::service_name());
+			_gen_parent_service_xml(xml, Pin_control::Session::service_name());
+			_gen_parent_service_xml(xml, Irq_session::service_name());
 		});
 
 		xml.node("default-route", [&] () {

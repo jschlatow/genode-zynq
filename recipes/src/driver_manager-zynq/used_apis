@@ -4,3 +4,5 @@ platform_session
 report_session
 nic_session
 uplink_session
+pin_control_session
+pin_state_session
