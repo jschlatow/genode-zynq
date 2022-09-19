@@ -1,4 +1,8 @@
+ifeq ($(CONTRIB_DIR),)
+ADNOOS_PORT_DIR := $(REP_DIR)/src
+else
 ADNOOS_PORT_DIR := $(call select_from_ports,ad_noos)/src
+endif
 
 AD9361_DIR   := $(ADNOOS_PORT_DIR)/drivers/rf-transceiver/ad9361
 AXICORE_DIR  := $(ADNOOS_PORT_DIR)/drivers/axi_core

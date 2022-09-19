@@ -11,13 +11,17 @@
  * under the terms of the GNU Affero General Public License version 3.
  */
 
+/* libc includes */
 #include <stdint.h>
 #include <stdio.h>
+
+/* ad no-OS includes */
 #include "error.h"
 #include "util.h"
 #include "gpio.h"
 
-#include "genode_backend.h"
+/* local includes */
+#include <genode_backend.h>
 
 #define TRACE printf("\033[32m%s\033[0m called from %p, not implemented\n", __PRETTY_FUNCTION__, __builtin_return_address(0))
 

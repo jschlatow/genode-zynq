@@ -11,10 +11,14 @@
  * under the terms of the GNU Affero General Public License version 3.
  */
 
+/* Genode includes */
 #include <base/log.h>
 
-#include "platform.h"
-#include "error.h"
+/* local includes */
+#include <platform.h>
+
+/* AD no-OS includes */
+#include <error.h>
 
 using namespace Genode;
 
