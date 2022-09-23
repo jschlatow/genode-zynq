@@ -1,5 +1,3 @@
-ADNOOS_PORT_DIR := $(call select_from_ports,ad_noos)/src
-
 TARGET = test-ad9361
 LIBS   = base libc ad9361
 

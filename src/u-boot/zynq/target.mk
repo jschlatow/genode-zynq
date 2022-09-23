@@ -29,7 +29,7 @@ unexport .SHELLFLAGS
 # U-Boot
 #
 
-UBOOT_DIR        := $(call select_from_ports,zynq_uboot)/uboot
+UBOOT_DIR        := $(addsuffix /uboot, $(call select_from_ports,zynq_uboot))
 UBOOT_BUILD_DIR   = $(PWD)/$(PRG_REL_DIR)/$(BOARD)
 UBOOT_CONFIG_FILE = $(BOARD)/.config
 UBOOT_IMG_FILE    = $(BOARD)/u-boot.img

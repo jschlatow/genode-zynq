@@ -8,7 +8,7 @@ SRC_C   += $(notdir $(wildcard $(PRG_DIR)/generated_dummies.c))
 # lx_emul/initcall_order.h
 INC_DIR += $(REP_DIR)/src/include
 
-LX_SRC_DIR := $(call select_from_ports,linux)/src/linux
+LX_SRC_DIR := $(addsuffix /src/linux, $(call select_from_ports,linux))
 ifeq ($(wildcard $(LX_SRC_DIR)),)
 LX_SRC_DIR := $(call select_from_repositories,src/linux)
 endif
