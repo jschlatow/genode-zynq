@@ -75,11 +75,11 @@ struct Update_manager::Main : Deploy, Update_state_reporter
 			};
 
 			/* copy <static> from config*/
-			config_xml.with_sub_node("static", [&] (Xml_node const &node) {
+			config_xml.with_optional_sub_node("static", [&] (Xml_node const &node) {
 				append_xml_node(node); });
 
 			/* copy <common_routes> from config*/
-			config_xml.with_sub_node("common_routes", [&] (Xml_node const &node) {
+			config_xml.with_optional_sub_node("common_routes", [&] (Xml_node const &node) {
 				append_xml_node(node); });
 
 			_apps.gen_start_entries(xml);
