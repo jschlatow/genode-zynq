@@ -325,21 +325,21 @@ struct Ad::Ad9361_config
 	template<typename T>
 	void apply_value(Genode::Xml_node const & node, const char * name, T & target)
 	{
-		node.with_sub_node(name, [&] (Genode::Xml_node const & param) {
+		node.with_optional_sub_node(name, [&] (Genode::Xml_node const & param) {
 			target = param.attribute_value("value", target);
 		});
 	}
 
 	void apply_value(Genode::Xml_node const & node, const char * name, int32_t & target)
 	{
-		node.with_sub_node(name, [&] (Genode::Xml_node const & param) {
+		node.with_optional_sub_node(name, [&] (Genode::Xml_node const & param) {
 			target = (int32_t)param.attribute_value<unsigned>("value", target);
 		});
 	}
 
 	void apply_value(Genode::Xml_node const & node, const char * name, int8_t & target)
 	{
-		node.with_sub_node(name, [&] (Genode::Xml_node const & param) {
+		node.with_optional_sub_node(name, [&] (Genode::Xml_node const & param) {
 			target = (int8_t)param.attribute_value<unsigned>("value", target);
 		});
 	}
@@ -347,7 +347,7 @@ struct Ad::Ad9361_config
 	template<typename T>
 	void apply_boolean(Genode::Xml_node const & node, const char * name, T & target)
 	{
-		node.with_sub_node(name, [&] (Genode::Xml_node const & param) {
+		node.with_optional_sub_node(name, [&] (Genode::Xml_node const & param) {
 			target = param.attribute_value("value", (bool)target);
 		});
 	}
@@ -355,7 +355,7 @@ struct Ad::Ad9361_config
 	template<typename T>
 	void apply_array(Genode::Xml_node const & node, const char * name, T & target)
 	{
-		node.with_sub_node(name, [&] (Genode::Xml_node const & param) {
+		node.with_optional_sub_node(name, [&] (Genode::Xml_node const & param) {
 			size_t i = 0;
 			param.for_each_sub_node("field", [&] (Genode::Xml_node const & field) {
 				if (i >= sizeof(target))
@@ -515,7 +515,7 @@ void Ad::Ad9361::_restart_driver(Xml_node const & config)
 			}
 	
 			/* update default_init_params from config */
-			config.with_sub_node("adi", [&] (Xml_node const & node) {
+			config.with_optional_sub_node("adi", [&] (Xml_node const & node) {
 				_update_init_params(node);
 			});
 	
