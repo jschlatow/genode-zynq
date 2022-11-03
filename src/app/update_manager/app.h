@@ -104,7 +104,8 @@ class Update_manager::Variant : public Genode::List_model<Variant>::Element
 		: _xml        (variant_node),
 		  _pkg        (_xml.attribute_value("pkg",      Path())),
 		  _max_retries(_xml.attribute_value("retry",    0U)),
-		  _delay_ms   (_xml.attribute_value("delay_ms", 0U))
+		  _delay_ms   (_xml.attribute_value("delay_ms", 0U)),
+		  _version    (_xml.attribute_value("version",  0U))
 		{ }
 
 		Path const &pkg()   const { return _pkg; }
