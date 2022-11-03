@@ -100,6 +100,12 @@ struct Update_manager::Main : Deploy, Update_state_reporter
 			xml.attribute("arch", _config.xml().attribute_value("arch", Genode::String<8>()));
 			_download_queue.gen_installation_entries(xml);
 		});
+
+		/* continue with deployment if there is nothing to download */
+		if (!_download_queue.any_active_download()) {
+			_apps.apply_installation();
+			_gen_deploy_config();
+		}
 	}
 
 	void _handle_download_state()
