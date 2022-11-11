@@ -1,0 +1,8 @@
+LICENSE := MIT
+VERSION := xilinx_v2022.2
+
+DOWNLOADS := embeddedsw.archive
+
+URL(embeddedsw) := https://github.com/Xilinx/embeddedsw/archive/refs/tags/$(VERSION).tar.gz
+SHA(embeddedsw) := fc0e86027bdba53f5df373bcb38a171d61704db4ff1b4671f3886a87ceec7068
+DIR(embeddedsw) := src/embeddedsw
