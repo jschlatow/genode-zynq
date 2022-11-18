@@ -88,9 +88,6 @@ struct Update_manager::Main : Deploy, Update_state_reporter
 
 	void _handle_config()
 	{
-		/* cleanup download queue to retry failed downloads */
-		_download_queue.remove_failed_downloads();
-
 		/* apply new config */
 		_config.update();
 		_apps.apply_config(_config.xml());
