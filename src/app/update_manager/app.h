@@ -82,7 +82,8 @@ class Update_manager::Variant : public Genode::List_model<Variant>::Element
 			FAILED
 		} _state { NEEDS_INSTALL };
 
-		bool _deployable() const { return _state == State::INSTALLED; }
+		bool _needs_install() const { return _state == State::NEEDS_INSTALL; }
+		bool _deployable()    const { return _state == State::INSTALLED; }
 
 		void _installed(bool success) { _state = success ? State::INSTALLED : State::FAILED; }
 
@@ -220,9 +221,20 @@ class Update_manager::Variants : public Genode::List_model<Variant>
 		{
 			for_each([&] (Variant &v) {
 				v._installed(fn(v));
-
-				_find_first_deployable();
 			});
+
+			_find_first_deployable();
+		}
+
+		bool install_finished()
+		{
+			bool finished = true;
+			for_each([&] (Variant &v) {
+				if (v._needs_install())
+					finished = false;
+			});
+
+			return finished;
 		}
 
 		template <typename FUNC>
@@ -247,6 +259,7 @@ class Update_manager::App : public Genode::List_model<App>::Element
 		using Name = Report::Consumer::Name;
 
 		enum State {
+			INSTALLING,
 			STARTING,
 			RUNNING,
 			FAILED
@@ -258,9 +271,10 @@ class Update_manager::App : public Genode::List_model<App>::Element
 		Allocator                             &_alloc;
 		Deploy                                &_deploy;
 		Name                                   _name;
+		Path                                   _last_running_pkg { };
 		Download_queue                        &_download_queue;
 		Timer::One_shot_timeout<App>           _timeout;
-		State                                  _state { STARTING };
+		State                                  _state { INSTALLING };
 		Update_state_reporter                 &_update_state_reporter;
 
 		Constructible<Buffered_xml>            _app_xml { };
@@ -349,8 +363,12 @@ class Update_manager::App : public Genode::List_model<App>::Element
 
 			if (xml.has_sub_node("failed"))
 				_handle_error();
-			else
+			else if (old_state == STARTING) {
 				_state = RUNNING;
+				_variants.with_current_variant([&] (Variant const &v) {
+					_last_running_pkg = v.pkg();
+				});
+			}
 
 			if (old_state != _state)
 				_update_state_reporter.update();
@@ -378,6 +396,9 @@ void Update_manager::App::apply_config(Xml_node const &app_node)
 	_variants.for_each([&] (Variant const &v) {
 		_download_queue.add(v.pkg());
 	});
+
+	if (!_variants.install_finished())
+		_state = State::INSTALLING;
 }
 
 
@@ -425,8 +446,13 @@ void Update_manager::App::apply_installation()
 		return success;
 	});
 
+	if (_variants.install_finished())
+		_state = STARTING;
+
 	_variants.with_current_variant([&] (Variant &v) {
-		if (v.delay_ms())
+		if (_last_running_pkg == v.pkg())
+			_state = RUNNING;
+		else if (v.delay_ms())
 			_timeout.schedule(Genode::Microseconds { v.delay_ms() * 1000U });
 	});
 }
@@ -452,24 +478,27 @@ void Update_manager::App::gen_start_entries(Xml_generator &xml) const
 
 void Update_manager::App::gen_state_entry(Xml_generator &xml) const
 {
-	_variants.with_current_variant([&] (Variant const &v) {
-		xml.node("app", [&] () {
-			xml.attribute("name", _name);
+	xml.node("app", [&] () {
+		xml.attribute("name", _name);
+		_variants.with_current_variant([&] (Variant const &v) {
 			xml.attribute("variant", v.pkg());
 			xml.attribute("version", v.version());
-
-			switch (_state) {
-			case State::STARTING:
-				xml.attribute("state", "STARTING");
-				break;
-			case State::RUNNING:
-				xml.attribute("state", "RUNNING");
-				break;
-			case State::FAILED:
-				xml.attribute("state", "FAILED");
-				break;
-			}
 		});
+
+		switch (_state) {
+		case State::INSTALLING:
+			xml.attribute("state", "INSTALLING");
+			break;
+		case State::STARTING:
+			xml.attribute("state", "STARTING");
+			break;
+		case State::RUNNING:
+			xml.attribute("state", "RUNNING");
+			break;
+		case State::FAILED:
+			xml.attribute("state", "FAILED");
+			break;
+		}
 	});
 }
 

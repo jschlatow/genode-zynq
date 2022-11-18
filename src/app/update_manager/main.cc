@@ -106,6 +106,8 @@ struct Update_manager::Main : Deploy, Update_state_reporter
 			_apps.apply_installation();
 			_gen_deploy_config();
 		}
+
+		update();
 	}
 
 	void _handle_download_state()
@@ -119,8 +121,9 @@ struct Update_manager::Main : Deploy, Update_state_reporter
 			return;
 
 		_apps.apply_installation();
-
 		_gen_deploy_config();
+
+		update();
 	}
 
 	Main(Genode::Env &env) : _env(env)
