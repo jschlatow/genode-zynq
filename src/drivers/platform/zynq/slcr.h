@@ -28,6 +28,8 @@ struct Driver::Slcr : private Attached_mmio
 
 	void *_regs() { return local_addr<void>(); }
 
+	struct Unlock : Register<0x8, 32> { };
+
 	struct Cpu_ratio_mode : Register<0x1C4, 32>
 	{
 		struct Ratio621 : Bitfield<0,1> { };
@@ -295,13 +297,71 @@ struct Driver::Slcr : private Attached_mmio
 	Can_clk _can1_clk { _clocks, "can1", _regs(), 0x15C };
 
 
-	/* TODO add DCI, FCLK{0-3} and PCAP clocks */
+	struct Fpga_clk : Io_clk
+	{
+		struct Reg : Register<0, 32>
+		{
+			struct Divisor1 : Bitfield<20,6> { };
+		};
+
+		Fpga_clk(Clocks     &clocks,
+		         Name const &name,
+		         void       *regs,
+		         unsigned    reg_offset)
+		: Io_clk(clocks, name, regs, reg_offset)
+		{ }
+
+		static unsigned _find_divisor(unsigned target_div) {
+			unsigned result = 1;
+			unsigned primes[11] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 };
+
+			for (size_t i=0; i < 11; i++) {
+				while (target_div % primes[i] == 0 && (result * primes[i] < 0x3f)) {
+					target_div /= primes[i];
+					result *= primes[i];
+				}
+				if (result >= target_div)
+					break;
+			}
+
+			return result;
+		}
+
+		void rate(Rate r) override {
+			unsigned long parent     = _parent_rate().value;
+			unsigned long target     = r.value;
+			unsigned long max_target = 250UL*1000UL*1000UL;
+			if (target > max_target) {
+				Genode::warning("Clock rate exceeds maximum.");
+				target = max_target;
+			}
+
+			unsigned long target_div = parent / target + (parent % target >= target/2);
+			unsigned long div1 = _find_divisor(target_div);
+			unsigned long div0 = target_div / div1;
+
+			/* first set divisors to max to avoid temporary overclocking */
+			write<Io_clk::Reg::Divisor0>(0x3f);
+			write<Reg::Divisor1>(0x3f);
+			write<Io_clk::Reg::Divisor0>(div0);
+			write<Reg::Divisor1>(div1);
+		}
+		Rate rate() const override { return Rate { Io_clk::rate().value / Genode::max(1U, read<Reg::Divisor1>()) }; }
+	};
+
+	Fpga_clk _fpga0_clk { _clocks, "fpga0", _regs(), 0x170 };
+	Fpga_clk _fpga1_clk { _clocks, "fpga1", _regs(), 0x180 };
+	Fpga_clk _fpga2_clk { _clocks, "fpga2", _regs(), 0x190 };
+	Fpga_clk _fpga3_clk { _clocks, "fpga3", _regs(), 0x1a0 };
 
 	Slcr(Genode::Env &env, Clocks &clocks, Clock &ps_clk)
 	:
 		Attached_mmio(env, 0xf8000000, 0x1000),
 		_env(env), _clocks(clocks), _ps_clk(ps_clk)
-	{ }
+	{
+		/* unlock write access to clock registers */
+		write<Unlock>(0xdf0d);
+	}
 };
 
 #endif /* _SRC__DRIVERS__PLATFORM__ZYNQ__SLCR_H_ */

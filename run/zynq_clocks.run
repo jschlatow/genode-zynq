@@ -85,6 +85,10 @@ set config  {
 					<clock name="lqspi_aper" driver_name="lqspi_aper"/>
 					<clock name="smc_aper"   driver_name="smc_aper"/>
 					<clock name="swdt"       driver_name="swdt"/>
+					<clock name="fpga0"      driver_name="fpga0"/>
+					<clock name="fpga1"      driver_name="fpga1"/>
+					<clock name="fpga2"      driver_name="fpga2"/>
+					<clock name="fpga3"      driver_name="fpga3"/>
 				</device>
 
 				<policy label="test-zynq_clocks -> " info="yes">

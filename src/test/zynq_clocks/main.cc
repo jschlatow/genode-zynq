@@ -27,6 +27,7 @@ struct Main
 	Main(Env &env) : env(env)
 	{
 		log("--- Zynq Clock Test ---");
+		platform.update();
 		platform.with_xml([&] (Xml_node & xml) {
 			xml.for_each_sub_node("device", [&] (Xml_node & node) {
 				log("Device \"", node.attribute_value("name", Name()), "\":");
