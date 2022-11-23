@@ -33,7 +33,7 @@ struct Driver::Main
 	Fixed_clock _ps_clk { _common.devices().clocks(), "ps_clk",
 	                      Clock::Rate { 33333333 } };
 
-	Slcr  _slcr { _env, _common.devices().clocks(), _ps_clk };
+	Slcr  _slcr { _env, _common.devices().clocks(), _common.devices().resets(), _ps_clk };
 
 	void _handle_config();
 

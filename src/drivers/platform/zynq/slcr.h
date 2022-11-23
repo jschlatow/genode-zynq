@@ -16,6 +16,7 @@
 
 #include <os/attached_mmio.h>
 #include <clock.h>
+#include <reset.h>
 
 namespace Driver { struct Slcr; }
 
@@ -24,6 +25,7 @@ struct Driver::Slcr : private Attached_mmio
 {
 	Genode::Env &_env;
 	Clocks      &_clocks;
+	Resets      &_resets;
 	Clock       &_ps_clk;
 
 	void *_regs() { return local_addr<void>(); }
@@ -37,6 +39,36 @@ struct Driver::Slcr : private Attached_mmio
 
 	const bool     _621_enabled { (bool)read<Cpu_ratio_mode::Ratio621>() };
 	const unsigned _cpu_1x_div  { _621_enabled ? 6U : 4U };
+
+	struct Fpga_reset : Register <0x240, 32> {
+		struct Fpga0 : Bitfield <0,1> { };
+		struct Fpga1 : Bitfield <1,1> { };
+		struct Fpga2 : Bitfield <2,1> { };
+		struct Fpga3 : Bitfield <3,1> { };
+	};
+
+	template <typename REG, typename BITFIELD>
+	struct Reset_switch : Reset
+	{
+		Slcr                 & slcr;
+		typename REG::access_t on;
+		typename REG::access_t off;
+
+		Reset_switch(Slcr                 & slcr,
+		             Reset::Name const    & name,
+		             typename REG::access_t on,
+		             typename REG::access_t off)
+		:
+			Reset(slcr._resets, name),
+			slcr(slcr), on(on), off(off) {}
+
+		void _deassert() override {
+			slcr.write<BITFIELD>(on); }
+
+		void _assert() override {
+			slcr.write<BITFIELD>(off); }
+	};
+
 
 	/*
 	 * PLL clocks
@@ -354,10 +386,15 @@ struct Driver::Slcr : private Attached_mmio
 	Fpga_clk _fpga2_clk { _clocks, "fpga2", _regs(), 0x190 };
 	Fpga_clk _fpga3_clk { _clocks, "fpga3", _regs(), 0x1a0 };
 
-	Slcr(Genode::Env &env, Clocks &clocks, Clock &ps_clk)
+	Reset_switch<Fpga_reset, Fpga_reset::Fpga0> _fpga0_rst { *this, "fpga0", 0, 1 };
+	Reset_switch<Fpga_reset, Fpga_reset::Fpga1> _fpga1_rst { *this, "fpga1", 0, 1 };
+	Reset_switch<Fpga_reset, Fpga_reset::Fpga2> _fpga2_rst { *this, "fpga2", 0, 1 };
+	Reset_switch<Fpga_reset, Fpga_reset::Fpga3> _fpga3_rst { *this, "fpga3", 0, 1 };
+
+	Slcr(Genode::Env &env, Clocks &clocks, Resets &resets, Clock &ps_clk)
 	:
 		Attached_mmio(env, 0xf8000000, 0x1000),
-		_env(env), _clocks(clocks), _ps_clk(ps_clk)
+		_env(env), _clocks(clocks), _resets(resets), _ps_clk(ps_clk)
 	{
 		/* unlock write access to clock registers */
 		write<Unlock>(0xdf0d);
