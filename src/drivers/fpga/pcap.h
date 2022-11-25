@@ -131,7 +131,6 @@ class Fpga::Pcap_loader
 	private:
 		Env                         &_env;
 		Platform::Connection        &_platform;
-		Timer::Connection            _timer  { _env };
 		Constructible<Devcfg_driver> _driver { };
 
 		struct Dma_buffer
