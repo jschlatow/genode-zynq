@@ -1,5 +1,6 @@
 <devices>
 	<device name="devcfg" type="xlnx,zynq-devcfg-1.0">
+		<reset-domain name="fpga_nreset"/>
 		<io_mem address="0xf8007000" size="0x1000"/>;
 	</device>
 	<device name="ethernet0" type="cadence_gem">

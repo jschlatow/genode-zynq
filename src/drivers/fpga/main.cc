@@ -106,9 +106,7 @@ struct Fpga::Main
 	Reporter                           reporter          { env, "state" };
 
 	Platform::Connection               platform          { env };
-	Platform::Device                   device            { platform,
-	                                                       Type { "xlnx,zynq-devcfg-1.0" } };
-	Pcap_loader                        loader            { env, platform, device };
+	Pcap_loader                        loader            { env, platform };
 
 	void handle_config();
 

@@ -40,11 +40,64 @@ struct Driver::Slcr : private Attached_mmio
 	const bool     _621_enabled { (bool)read<Cpu_ratio_mode::Ratio621>() };
 	const unsigned _cpu_1x_div  { _621_enabled ? 6U : 4U };
 
-	struct Fpga_reset : Register <0x240, 32> {
-		struct Fpga0 : Bitfield <0,1> { };
-		struct Fpga1 : Bitfield <1,1> { };
-		struct Fpga2 : Bitfield <2,1> { };
-		struct Fpga3 : Bitfield <3,1> { };
+	/* Individual FPGA reset domains */
+	struct Fpga_reset : Register<0x240, 32> {
+		struct Fpga0 : Bitfield<0,1> { };
+		struct Fpga1 : Bitfield<1,1> { };
+		struct Fpga2 : Bitfield<2,1> { };
+		struct Fpga3 : Bitfield<3,1> { };
+	};
+
+	/*
+	 * Inverted reset domain to be used when devcfg device is acquired in
+	 * order to reprogram the FPGA.
+	 */
+	struct Fpga_nreset : Reset {
+
+		struct Fpga_rst_reg : Register<0x240, 32> {
+			struct All : Bitfield<0,4> {
+				enum { RUN  = 0x0, HALT = 0xF };
+			};
+		};
+
+		/* Voltage level shifters */
+		struct Lvl_shifter : Register<0x900, 32> {
+			struct Enable : Bitfield<0,4> {
+				enum { DISABLE = 0x0,
+				       PSPL    = 0xA,
+				       ALL     = 0xF
+				};
+			};
+		};
+
+		Slcr & slcr;
+
+		Fpga_nreset(Slcr              & slcr,
+		            Reset::Name const & name)
+		:
+			Reset(slcr._resets, name),
+			slcr(slcr) {}
+
+		void _deassert() override
+		{
+			/* halt fpga when device is acquired */
+			slcr.write<Fpga_rst_reg::All>(Fpga_rst_reg::All::HALT);
+
+			/* disable all voltage level shifters */
+			slcr.write<Lvl_shifter::Enable>(Lvl_shifter::Enable::DISABLE);
+
+			/* enable only PS-to-OL voltage level shifters */
+			slcr.write<Lvl_shifter::Enable>(Lvl_shifter::Enable::PSPL);
+		}
+
+		void _assert() override
+		{
+			/* enable all voltage level shifters */
+			slcr.write<Lvl_shifter::Enable>(Lvl_shifter::Enable::ALL);
+
+			/* reset fpga when device is released */
+			slcr.write<Fpga_rst_reg::All>(Fpga_rst_reg::All::RUN);
+		}
 	};
 
 	template <typename REG, typename BITFIELD>
@@ -390,6 +443,8 @@ struct Driver::Slcr : private Attached_mmio
 	Reset_switch<Fpga_reset, Fpga_reset::Fpga1> _fpga1_rst { *this, "fpga1", 0, 1 };
 	Reset_switch<Fpga_reset, Fpga_reset::Fpga2> _fpga2_rst { *this, "fpga2", 0, 1 };
 	Reset_switch<Fpga_reset, Fpga_reset::Fpga3> _fpga3_rst { *this, "fpga3", 0, 1 };
+
+	Fpga_nreset _fpga_nreset { *this, "fpga_nreset" };
 
 	Slcr(Genode::Env &env, Clocks &clocks, Resets &resets, Clock &ps_clk)
 	:
