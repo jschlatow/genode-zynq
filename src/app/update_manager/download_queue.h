@@ -72,7 +72,6 @@ struct Update_manager::Download_queue : Genode::Noncopyable
 
 	void add(Path const &path)
 	{
-		log("add to download queue: ", path);
 		bool already_exists = false;
 		_downloads.for_each([&] (Download const &download) {
 			if (download.path == path)
@@ -80,6 +79,8 @@ struct Update_manager::Download_queue : Genode::Noncopyable
 
 		if (already_exists)
 			return;
+
+		log("add to download queue: ", path);
 
 		new (_alloc) Registered<Download>(_downloads, path);
 	}

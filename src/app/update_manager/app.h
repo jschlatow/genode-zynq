@@ -71,10 +71,9 @@ class Update_manager::Variant : public Genode::List_model<Variant>::Element
 		Xml_node _xml;
 		Path     _pkg;
 
+		unsigned _version;
 		unsigned _max_retries;
 		unsigned _delay_ms;
-
-		unsigned _version     { 0 };
 
 		enum State {
 			NEEDS_INSTALL,
@@ -104,9 +103,9 @@ class Update_manager::Variant : public Genode::List_model<Variant>::Element
 		Variant(Xml_node const &variant_node)
 		: _xml        (variant_node),
 		  _pkg        (_xml.attribute_value("pkg",      Path())),
-		  _max_retries(_xml.attribute_value("retry",    0U)),
-		  _delay_ms   (_xml.attribute_value("delay_ms", 0U)),
-		  _version    (_xml.attribute_value("version",  0U))
+		  _version    (_xml.attribute_value("version",  0U)),
+		  _max_retries(_xml.attribute_value("retry",    0U) + _version),
+		  _delay_ms   (_xml.attribute_value("delay_ms", 0U))
 		{ }
 
 		Path const &pkg()   const { return _pkg; }
