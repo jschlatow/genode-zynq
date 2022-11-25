@@ -72,6 +72,13 @@ struct Update_manager::Download_queue : Genode::Noncopyable
 
 	void add(Path const &path)
 	{
+		try {
+			Depot::Archive::type(path);
+		} catch (Depot::Archive::Unknown_archive_type) {
+			warning("archive '", path, "' has unexpected type");
+			return;
+		}
+
 		bool already_exists = false;
 		_downloads.for_each([&] (Download const &download) {
 			if (download.path == path)

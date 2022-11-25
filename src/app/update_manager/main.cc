@@ -88,6 +88,9 @@ struct Update_manager::Main : Deploy, Update_state_reporter
 
 	void _handle_config()
 	{
+		if (_download_queue.any_active_download())
+			Genode::warning("download queue has still active downloads");
+
 		/* apply new config */
 		_config.update();
 		_apps.apply_config(_config.xml());
