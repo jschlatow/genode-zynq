@@ -108,6 +108,9 @@ class Update_manager::Variant : public Genode::List_model<Variant>::Element
 		  _delay_ms   (_xml.attribute_value("delay_ms", 0U))
 		{ }
 
+		bool operator==(Variant const &rhs) const {
+			return rhs._pkg == _pkg && rhs._version == _version; }
+
 		Path const &pkg()   const { return _pkg; }
 
 		unsigned version()  const { return _version; }
@@ -270,7 +273,8 @@ class Update_manager::App : public Genode::List_model<App>::Element
 		Allocator                             &_alloc;
 		Deploy                                &_deploy;
 		Name                                   _name;
-		Path                                   _last_running_pkg { };
+		Xml_node                               _empty_variant_xml    { "<empty/>" };
+		Variant                                _last_running_variant { _empty_variant_xml };
 		Download_queue                        &_download_queue;
 		Timer::One_shot_timeout<App>           _timeout;
 		State                                  _state { INSTALLING };
@@ -365,7 +369,7 @@ class Update_manager::App : public Genode::List_model<App>::Element
 			else if (old_state == STARTING) {
 				_state = RUNNING;
 				_variants.with_current_variant([&] (Variant const &v) {
-					_last_running_pkg = v.pkg();
+					_last_running_variant = v;
 				});
 			}
 
@@ -449,7 +453,7 @@ void Update_manager::App::apply_installation()
 		_state = STARTING;
 
 	_variants.with_current_variant([&] (Variant &v) {
-		if (_last_running_pkg == v.pkg())
+		if (_last_running_variant == v)
 			_state = RUNNING;
 		else if (v.delay_ms())
 			_timeout.schedule(Genode::Microseconds { v.delay_ms() * 1000U });
