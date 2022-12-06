@@ -407,8 +407,6 @@ void Update_manager::App::apply_config(Xml_node const &app_node)
 
 void Update_manager::App::_handle_error()
 {
-	_state = State::FAILED;
-
 	_variants.with_current_variant([&] (Variant &v) {
 		Genode::warning(_name, ": execution failure in ", v.pkg());
 	});
@@ -418,15 +416,18 @@ void Update_manager::App::_handle_error()
 		/* restart the same variant */
 		[&] (Variant &v) {
 			delay_ms = v.delay_ms();
+			_state = State::STARTING;
 		},
 		/* variant changed */
 		[&] (Variant &v) {
 			Genode::warning(_name, ": switching to ", v.pkg());
 			delay_ms = v.delay_ms();
+			_state = State::STARTING;
 		},
 		/* no next variant error */
 		[&] () {
 			Genode::error(_name, ": stopped");
+			_state = State::FAILED;
 		}
 	);
 
