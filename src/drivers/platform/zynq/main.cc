@@ -14,6 +14,7 @@
 #include <base/component.h>
 
 #include <slcr.h>
+#include <axidmac.h>
 #include <common.h>
 
 namespace Driver { struct Main; };
@@ -34,6 +35,8 @@ struct Driver::Main
 	                      Clock::Rate { 33333333 } };
 
 	Slcr  _slcr { _env, _common.devices().clocks(), _common.devices().resets(), _ps_clk };
+
+	Axidmac _axidmac { _env, _common.devices().powers() };
 
 	void _handle_config();
 
