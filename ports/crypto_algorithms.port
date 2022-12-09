@@ -1,0 +1,9 @@
+LICENSE := none
+
+VERSION := 1
+
+DOWNLOADS := crypto_algorithms.git
+
+REV(crypto_algorithms) := cfbde48414baacf51fc7c74f275190881f037d32
+URL(crypto_algorithms) := https://github.com/B-Con/crypto-algorithms.git
+DIR(crypto_algorithms) := src

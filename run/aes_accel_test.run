@@ -1,0 +1,155 @@
+#
+# Build
+#
+
+create_boot_directory
+
+import_from_depot [depot_user]/src/[base_src] \
+                  [depot_user]/src/init \
+                  [depot_user]/pkg/drivers_fpga-zynq \
+                  [depot_user]/src/libc \
+                  [depot_user]/src/vfs \
+                  [depot_user]/raw/[board]-devices
+
+build {
+	test/aes_accel
+}
+
+#
+# Config
+#
+
+set config  {
+	<config verbose="yes">
+		<parent-provides>
+			<service name="ROM"/>
+			<service name="PD"/>
+			<service name="CPU"/>
+			<service name="LOG"/>
+			<service name="IO_MEM"/>
+			<service name="IRQ"/>
+		</parent-provides>
+		<default-route>
+			<any-service> <parent/> <any-child/> </any-service>
+		</default-route>
+		<default caps="200"/>
+
+		<start name="timer">
+			<resource name="RAM" quantum="1M"/>
+			<provides><service name="Timer"/></provides>
+		</start>
+
+		<start name="vfs">
+			<resource name="RAM" quantum="8M"/>
+			<provides><service name="File_system"/></provides>
+			<config>
+				<vfs>
+					<inline name="config">
+						<config>
+							<bitstream name="fpga.bit" size="0x3dbafc"/>
+						</config>
+					</inline>
+					<rom name="fpga.bit"/>
+				</vfs>
+				<default-policy root="/" writeable="no"/>
+			</config>
+		</start>
+
+		<start name="platform_drv" caps="1000" managing_system="yes">
+			<binary name="init"/>
+			<resource name="RAM" quantum="24M"/>
+			<provides> <service name="Platform"/> </provides>
+			<route>
+				<service name="ROM" label="config"> <parent label="drivers.config"/> </service>
+				<any-service> <parent/> <any-child/> </any-service>
+			</route>
+		</start>
+
+		<start name="test-aes_accel">
+			<resource name="RAM" quantum="32M"/>
+			<route>
+				<service name="Platform"> <child name="platform_drv"/> </service>
+				<service name="Timer">    <child name="timer"/> </service>
+				<any-service> <parent/> </any-service>
+			</route>
+		</start>
+
+		<start name="report_rom">
+			<resource name="RAM" quantum="2M"/>
+			<provides>
+				<service name="Report"/>
+				<service name="ROM"/>
+			</provides>
+			<config verbose="yes"/>
+		</start>
+
+	</config>
+}
+
+install_config $config
+
+#
+# Create platform_drv policy
+#
+set policy_fd [open [run_dir]/genode/policy w]
+puts $policy_fd {
+	<config>
+		<report devices="no"/>
+		<policy label="test-aes_accel -> ">
+			<device name="axidma_loopback"/>
+			<device name="encrypt_0"/>
+		</policy>
+	</config>
+}
+close $policy_fd
+
+#
+# Create devices_manager.config
+#
+set devices_manager_config_fd [open [run_dir]/genode/devices_manager.config w]
+puts $devices_manager_config_fd {
+<config>
+	<bitstream name="fpga.bit">
+		<devices>
+			<device name="axidma_loopback" type="axi_dma">
+				<io_mem address="0x40400000" size="0x10000"/>
+				<irq number="61"/>
+				<irq number="62"/>
+				<clock name="fpga0" driver_name="fpga0" rate="100000000"/>
+				<property name="XPAR_AXI_DMA__SG_INCLUDE_STSCNTRL_STRM" value="0"/>
+				<property name="XPAR_AXI_DMA__INCLUDE_MM2S" value="1"/>
+				<property name="XPAR_AXI_DMA__INCLUDE_MM2S_DRE" value="0"/>
+				<property name="XPAR_AXI_DMA__M_AXI_MM2S_DATA_WIDTH" value="128"/>
+				<property name="XPAR_AXI_DMA__INCLUDE_S2MM" value="1"/>
+				<property name="XPAR_AXI_DMA__INCLUDE_S2MM_DRE" value="0"/>
+				<property name="XPAR_AXI_DMA__M_AXI_S2MM_DATA_WIDTH" value="128"/>
+				<property name="XPAR_AXI_DMA__INCLUDE_SG" value="0"/>
+				<property name="XPAR_AXI_DMA__NUM_MM2S_CHANNELS" value="1"/>
+				<property name="XPAR_AXI_DMA__NUM_S2MM_CHANNELS" value="1"/>
+				<property name="XPAR_AXI_DMA__MM2S_BURST_SIZE" value="4"/>
+				<property name="XPAR_AXI_DMA__S2MM_BURST_SIZE" value="8"/>
+				<property name="XPAR_AXI_DMA__MICRO_DMA" value="0"/>
+				<property name="XPAR_AXI_DMA__SG_LENGTH_WIDTH" value="26"/>
+			</device>
+			<device name="encrypt_0" type="encrypt">
+				<io_mem address="0x40000000" size="0x10000"/>
+			</device>
+		</devices>
+	</bitstream>
+</config>
+}
+close $devices_manager_config_fd
+
+#
+# Boot modules
+#
+
+# generic modules
+set boot_modules {
+	fpga.bit test-aes_accel
+}
+build_boot_image $boot_modules
+
+append qemu_args " -nographic "
+run_genode_until forever
+
