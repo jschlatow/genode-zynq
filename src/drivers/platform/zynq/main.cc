@@ -14,6 +14,7 @@
 #include <base/component.h>
 
 #include <slcr.h>
+#include <dma_guard.h>
 #include <common.h>
 
 namespace Driver { struct Main; };
@@ -26,7 +27,7 @@ struct Driver::Main
 	Signal_handler<Main>   _config_handler { _env.ep(), *this,
 	                                         &Main::_handle_config };
 	Slcr_factory           _slcr           { _env, _common         };
-
+	Dma_guard_factory      _dma_guard      { _env, _common         };
 
 	void _handle_config();
 
