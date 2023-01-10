@@ -1,0 +1,164 @@
+# demo setup for rf_drv deployment
+
+proc ip_addr { } { return "192.168.42.58" }
+
+create_boot_directory
+
+import_from_depot [depot_user]/src/[base_src] \
+                  [depot_user]/src/curl \
+                  [depot_user]/src/init \
+                  [depot_user]/src/libc \
+                  [depot_user]/src/libssh \
+                  [depot_user]/src/nic_router \
+                  [depot_user]/src/openssl \
+                  [depot_user]/src/stdcxx \
+                  [depot_user]/src/vfs \
+                  [depot_user]/src/vfs_audit \
+                  [depot_user]/src/vfs_import \
+                  [depot_user]/src/vfs_lxip \
+                  [depot_user]/src/zlib \
+                  [depot_user]/pkg/drivers_nic-[board]
+
+set config {
+<config>
+	<parent-provides>
+		<service name="ROM"/>
+		<service name="IRQ"/>
+		<service name="IO_MEM"/>
+		<service name="IO_PORT"/>
+		<service name="PD"/>
+		<service name="RM"/>
+		<service name="CPU"/>
+		<service name="LOG"/>
+	</parent-provides>
+
+	<default-route>
+		<any-service> <parent/> <any-child/> </any-service>
+	</default-route>
+
+	<default caps="100"/>}
+
+append config {
+	<start name="timer">
+		<resource name="RAM" quantum="1M"/>
+		<provides> <service name="Timer"/> </provides>
+	</start>
+
+	<start name="nic_drv" caps="1000" managing_system="yes">
+		<binary name="init"/>
+		<resource name="RAM" quantum="32M"/>
+		<route>
+			<service name="ROM" label="config"> <parent label="drivers.config"/> </service>
+			<any-service> <parent/> <any-child/> </any-service>
+		</route>
+	</start>
+
+	<start name="nic_router" caps="200">
+		<resource name="RAM" quantum="10M"/>
+		<provides>
+			<service name="Nic"/>
+			<service name="Uplink"/>
+		</provides>
+		<config verbose="yes" verbose_packets="yes" verbose_domain_state="yes">
+
+			<policy label_prefix="nic_drv" domain="uplink"/>
+			<default-policy domain="default"/>
+
+			<domain name="uplink">
+
+				<nat domain="default"
+				     tcp-ports="16384"
+				     udp-ports="16384"
+				     icmp-ids="16384"/>
+
+			</domain>
+
+			<domain name="default" interface="10.0.3.1/24">
+				<dhcp-server ip_first="10.0.3.2" ip_last="10.0.3.200"/>
+
+				<tcp dst="0.0.0.0/0"><permit-any domain="uplink" /></tcp>
+				<udp dst="0.0.0.0/0"><permit-any domain="uplink" /></udp>
+				<icmp dst="0.0.0.0/0" domain="uplink"/>
+
+			</domain>
+
+		</config>
+	</start>
+
+	<start name="test-heartbeat" caps="200">
+		<resource name="RAM" quantum="32M"/>
+		<config period_ms="1000" server="http://} [ip_addr] {:5000">
+			<libc stdout="/dev/log" stderr="/dev/log" rtc="/dev/rtc" socket="/audit-socket"/>
+			<vfs>
+				<dir name="dev">
+					<log/>
+					<inline name="rtc">2022-09-01 18:22</inline>
+				</dir>
+				<dir name="socket">
+					<lxip dhcp="yes"/>
+				</dir>
+				<dir name="audit-socket">
+					<audit path="/socket"/>
+				</dir>
+			</vfs>
+		</config>
+	</start>
+
+</config>}
+
+
+install_config $config
+
+build { test/heartbeat }
+
+append boot_modules {
+	test-heartbeat
+}
+
+build_boot_image $boot_modules
+
+# create python for server
+set fd [open [run_dir]/server.py "w"]
+set server_file ""
+append server_file {
+from flask import Flask, request
+import time
+
+app = Flask(__name__)
+
+global last_time
+last_time = time.time()
+
+@app.route('/heartbeat', methods=['POST', 'GET'])
+def state():
+    global last_time
+    if request.method == 'GET':
+        return dict()
+    elif request.method == 'POST':
+        print("Last heartbeat: ", time.time() - last_time, " (id: ", request.get_json()['id'], ")")
+        last_time = time.time()
+        return dict()
+
+def main():
+    app.run(host="} [ip_addr] {")
+
+if __name__ == '__main__':
+    main()
+}
+puts $fd $server_file
+close $fd
+
+append qemu_args " -nographic "
+append_qemu_nic_args
+
+run_genode_until "dynamic IP config: interface" 120
+set serial_id [output_spawn_id]
+
+# start server
+spawn python [run_dir]/server.py
+set server_spawn_id $spawn_id
+
+set spawn_id_list [list $server_spawn_id $serial_id]
+while {1} {
+	run_genode_until "Last heartbeat" 60 $spawn_id_list
+}
