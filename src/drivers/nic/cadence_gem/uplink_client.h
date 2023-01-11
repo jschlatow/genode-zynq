@@ -29,8 +29,24 @@ namespace Cadence_gem {
 	using Rx_buffer = Rx_buffer_descriptor<Source, Buffered_dma_pool<Source>>;
 	using Tx_buffer = Tx_buffer_descriptor<Sink,   Buffered_dma_pool<Sink>>;
 
+	struct Prng;
 	class Uplink_client;
 }
+
+#include <trace/timestamp.h>
+
+struct Cadence_gem::Prng
+{
+	uint64_t seed { Trace::timestamp() };
+
+	/* return 0 to 99 */
+	unsigned next()
+	{
+		seed++;
+		uint64_t a = seed * 15485863ULL;
+		return (unsigned)(((a*a*a % 2038074743ULL) * 100ULL) / 2038074743ULL);
+	}
+};
 
 
 class Cadence_gem::Uplink_client : public Uplink_client_base
@@ -41,6 +57,8 @@ class Cadence_gem::Uplink_client : public Uplink_client_base
 		Constructible<Tx_buffer>               _tx_buffer        { };
 		Constructible<Rx_buffer>               _rx_buffer        { };
 		Device                                &_device;
+
+		Prng                                   _prng { };
 
 		bool _send()
 		{
@@ -60,6 +78,12 @@ class Cadence_gem::Uplink_client : public Uplink_client_base
 			Packet_descriptor packet = _conn->rx()->get_packet();
 			if (!packet.size()) {
 				Genode::warning("Invalid tx packet");
+				return true;
+			}
+
+			if (_prng.next() < 20) {
+				Genode::warning("Dropping TX packet");
+				_conn->rx()->acknowledge_packet(packet);
 				return true;
 			}
 
@@ -88,6 +112,12 @@ class Cadence_gem::Uplink_client : public Uplink_client_base
 			_device.handle_irq(*_rx_buffer, *_tx_buffer,
 				[&] (Nic::Packet_descriptor pkt)
 				{
+					if (_prng.next() < 20) {
+						Genode::warning("Dropping RX packet");
+						_rx_buffer->reset_descriptor(pkt);
+						return;
+					}
+
 					if (_conn->tx()->packet_valid(pkt)) {
 						/* submit packet */
 						_conn->tx()->submit_packet(pkt);
