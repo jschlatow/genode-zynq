@@ -1,0 +1,85 @@
+create_boot_directory
+
+import_from_depot [depot_user]/src/[base_src] \
+                  [depot_user]/src/init \
+                  [depot_user]/src/libc \
+                  [depot_user]/src/posix \
+                  [depot_user]/src/stdcxx \
+                  [depot_user]/src/vfs
+
+set config {
+<config>
+	<parent-provides>
+		<service name="ROM"/>
+		<service name="IRQ"/>
+		<service name="PD"/>
+		<service name="RM"/>
+		<service name="CPU"/>
+		<service name="LOG"/>
+	</parent-provides>
+
+	<default-route>
+		<any-service> <parent/> <any-child/> </any-service>
+	</default-route>
+
+	<default caps="100"/>
+
+	<start name="timer">
+		<resource name="RAM" quantum="1M"/>
+		<provides> <service name="Timer"/> </provides>
+	</start>
+
+	<start name="test-sleep_for">
+		<resource name="RAM" quantum="8M"/>
+		<config>
+			<libc stdout="/dev/log" stderr="/dev/log" rtc="/dev/rtc">
+				<pthread verbose="yes"/>
+			</libc>
+			<vfs>
+				<dir name="dev">
+					<log/>
+					<inline name="rtc">2022-09-01 18:22</inline>
+				</dir>
+			</vfs>
+		</config>
+	</start>
+
+</config>}
+
+
+install_config $config
+
+build { test/sleep_for }
+
+append boot_modules {
+	test-sleep_for
+}
+
+build_boot_image $boot_modules
+
+append qemu_args " -nographic "
+
+#run_genode_until forever
+run_genode_until {\[init -> test-sleep_for\] Starting.*\n} 20
+set serial_id [output_spawn_id]
+set rounds 100
+set errors 0
+
+puts "Test started"
+
+for {set i 1} {$i <= $rounds} {incr i} {
+	set start_time [clock milliseconds]
+	run_genode_until {\[init -> test-sleep_for\] Napping.*\n} 10 $serial_id
+	set end_time [clock milliseconds]
+	set diff_time [expr $end_time - $start_time]
+	if {[expr $diff_time > 1500]} {
+		puts "Test slept $diff_time ms instead of 1000 ms"
+		set errors [expr $errors + 1]
+		if {[expr $errors > 10]} {
+			puts "Aborting test after 10 consecutive errors"
+			exit 1
+		}
+	} else {
+		set errors 0
+	}
+}
