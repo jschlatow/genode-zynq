@@ -113,7 +113,7 @@ class Cadence_gem::Tx_buffer_descriptor : public Buffer_descriptor
 					const size_t length = Status::Length::get(_tail().status);
 					Nic::Packet_descriptor p = _dma_pool.packet_descriptor((addr_t)_tail().addr, length);
 					if (_sink.packet_valid(p))
-						_sink.acknowledge_packet(p);
+						_sink.try_ack_packet(p);
 					else
 						warning("Invalid packet descriptor");
 

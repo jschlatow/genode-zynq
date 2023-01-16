@@ -57,7 +57,7 @@ class Cadence_gem::Uplink_client : public Uplink_client_base
 			if (!_tx_buffer->ready_to_submit())
 				return false;
 
-			Packet_descriptor packet = _conn->rx()->get_packet();
+			Packet_descriptor packet = _conn->rx()->try_get_packet();
 			if (!packet.size()) {
 				Genode::warning("Invalid tx packet");
 				return true;
@@ -73,7 +73,7 @@ class Cadence_gem::Uplink_client : public Uplink_client_base
 		void _handle_acks()
 		{
 			while (_conn->tx()->ack_avail()) {
-				Packet_descriptor pd = _conn->tx()->get_acked_packet();
+				Packet_descriptor pd = _conn->tx()->try_get_acked_packet();
 				_rx_buffer->reset_descriptor(pd);
 			}
 		}
@@ -90,7 +90,7 @@ class Cadence_gem::Uplink_client : public Uplink_client_base
 				{
 					if (_conn->tx()->packet_valid(pkt)) {
 						/* submit packet */
-						_conn->tx()->submit_packet(pkt);
+						_conn->tx()->try_submit_packet(pkt);
 					}
 					else
 						error(
@@ -98,10 +98,12 @@ class Cadence_gem::Uplink_client : public Uplink_client_base
 							" size ", Hex(pkt.size()));
 					},
 				[&] () { _handle_acks(); },
-				[&] () { while(_send()); }
+				[&] () { while(_send());}
 			);
 
 			_device.irq_ack();
+			_conn->rx()->wakeup();
+			_conn->tx()->wakeup();
 		}
 
 
@@ -111,14 +113,15 @@ class Cadence_gem::Uplink_client : public Uplink_client_base
 
 		void _custom_conn_rx_handle_packet_avail() override
 		{
-			_handle_acks();
 
 			while (_send());
+			_conn->rx()->wakeup();
 		}
 
 		void _custom_conn_tx_handle_ack_avail() override
 		{
 			_handle_acks();
+			_conn->tx()->wakeup();
 		}
 
 		bool _custom_conn_rx_packet_avail_handler() override
