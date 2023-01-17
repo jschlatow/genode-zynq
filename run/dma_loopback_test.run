@@ -1,0 +1,125 @@
+#
+# Build
+#
+
+create_boot_directory
+
+import_from_depot [depot_user]/src/[base_src] \
+                  [depot_user]/src/init \
+                  [depot_user]/pkg/drivers_fpga-zynq \
+                  [depot_user]/src/libc \
+                  [depot_user]/src/sequence \
+                  [depot_user]/src/vfs \
+                  jschlatow/src/zybo_z720_dma_loopback-bitstream/2023-01-16 \
+                  [depot_user]/raw/[board]-devices
+
+build {
+	test/dma_loopback
+}
+
+#
+# Config
+#
+
+set config  {
+	<config verbose="yes">
+		<parent-provides>
+			<service name="ROM"/>
+			<service name="PD"/>
+			<service name="CPU"/>
+			<service name="LOG"/>
+			<service name="IO_MEM"/>
+			<service name="IRQ"/>
+		</parent-provides>
+		<default-route>
+			<any-service> <parent/> <any-child/> </any-service>
+		</default-route>
+		<default caps="200"/>
+
+		<start name="timer">
+			<resource name="RAM" quantum="1M"/>
+			<provides><service name="Timer"/></provides>
+		</start>
+
+		<start name="vfs">
+			<resource name="RAM" quantum="8M"/>
+			<provides><service name="File_system"/></provides>
+			<config>
+				<vfs>
+					<inline name="config">
+						<config>
+							<bitstream name="zybo_z720_dma_loopback-bitstream.bit" size="0x3dbafc"/>
+						</config>
+					</inline>
+					<rom name="zybo_z720_dma_loopback-bitstream.bit"/>
+				</vfs>
+				<default-policy root="/" writeable="no"/>
+			</config>
+		</start>
+
+		<start name="platform_drv" caps="1000" managing_system="yes">
+			<binary name="init"/>
+			<resource name="RAM" quantum="24M"/>
+			<provides> <service name="Platform"/> </provides>
+			<route>
+				<service name="ROM" label="config"> <parent label="drivers.config"/> </service>
+				<any-service> <parent/> <any-child/> </any-service>
+			</route>
+		</start>
+
+		<start name="sequence">
+			<resource name="RAM" quantum="400M"/>
+			<config keep_going="yes">
+				<start name="test-dma_loopback_hp">
+					<binary name="test-dma_loopback"/>
+					<resource name="RAM" quantum="200M"/>
+					<config cached="no" max_size="32M"/>
+				</start>
+				<start name="test-dma_loopback_acp">
+					<binary name="test-dma_loopback"/>
+					<resource name="RAM" quantum="200M"/>
+					<config cached="yes" max_size="32M"/>
+				</start>
+			</config>
+			<route>
+				<service name="Platform"> <child name="platform_drv"/> </service>
+				<service name="Timer">    <child name="timer"/> </service>
+				<any-service> <parent/> </any-service>
+			</route>
+		</start>
+
+
+	</config>
+}
+
+install_config $config
+
+#
+# Create platform_drv policy
+#
+set policy_fd [open [run_dir]/genode/policy w]
+puts $policy_fd {
+	<config>
+		<policy label="sequence -> test-dma_loopback_hp -> ">
+			<device name="axi_dma_0"/>
+		</policy>
+		<policy label="sequence -> test-dma_loopback_acp -> ">
+			<device name="axi_dma_1"/>
+		</policy>
+	</config>
+}
+close $policy_fd
+
+#
+# Boot modules
+#
+
+# generic modules
+set boot_modules {
+	test-dma_loopback
+}
+build_boot_image $boot_modules
+
+append qemu_args " -nographic "
+run_genode_until "child \"sequence\" exited with exit value 0" 180
+
