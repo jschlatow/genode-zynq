@@ -17,11 +17,16 @@
 #include <os/attached_mmio.h>
 #include <clock.h>
 #include <reset.h>
+#include <common.h>
 
-namespace Driver { struct Slcr; }
+namespace Driver {
+	struct Slcr;
+	struct Slcr_factory;
+}
 
 
-struct Driver::Slcr : private Attached_mmio
+struct Driver::Slcr : private Attached_mmio,
+                      public  Driver::Control_device
 {
 	Genode::Env &_env;
 	Clocks      &_clocks;
@@ -446,14 +451,56 @@ struct Driver::Slcr : private Attached_mmio
 
 	Fpga_nreset _fpga_nreset { *this, "fpga_nreset" };
 
-	Slcr(Genode::Env &env, Clocks &clocks, Resets &resets, Clock &ps_clk)
+	Slcr(Genode::Env              & env,
+	     Control_devices          & control_devices,
+	     Device::Name       const & name,
+	     Device::Io_mem::Range      range,
+	     Clocks                   & clocks,
+	     Resets                   & resets,
+	     Clock                    & ps_clk)
 	:
-		Attached_mmio(env, 0xf8000000, 0x1000),
+		Attached_mmio(env, range.start, range.size),
+		Control_device(control_devices, name),
 		_env(env), _clocks(clocks), _resets(resets), _ps_clk(ps_clk)
 	{
 		/* unlock write access to clock registers */
 		write<Unlock>(0xdf0d);
 	}
+};
+
+
+class Driver::Slcr_factory : public Driver::Control_device_factory
+{
+	private:
+
+		Genode::Env  & _env;
+		Device_model & _devices;
+
+		/**
+		 * PS_CLK is either 33.33333Mhz or 50MHz. The latter is very rare though
+		 * and practically not in use, hence we stick to 33.33333Mhz.
+		 */
+		Fixed_clock _ps_clk { _devices.clocks(), "ps_clk", Clock::Rate { 33333333 } };
+
+	public:
+
+		Slcr_factory(Genode::Env & env, Common & common)
+		: Control_device_factory(common.control_device_factories(), Device::Type { "slcr" }),
+		  _env(env),
+		  _devices(common.devices())
+		{ }
+
+		void create(Allocator & alloc, Control_devices & control_devices, Device const & device) override
+		{
+			using Range = Device::Io_mem::Range;
+
+			device.for_each_io_mem([&] (unsigned idx, Range range, Device::Pci_bar, bool)
+			{
+				if (idx == 0)
+					new (alloc) Slcr(_env, control_devices, device.name(), range,
+					                 _devices.clocks(), _devices.resets(), _ps_clk);
+			});
+		}
 };
 
 #endif /* _SRC__DRIVERS__PLATFORM__ZYNQ__SLCR_H_ */

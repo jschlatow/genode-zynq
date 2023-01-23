@@ -25,15 +25,8 @@ struct Driver::Main
 	Common                 _common         { _env, _config_rom     };
 	Signal_handler<Main>   _config_handler { _env.ep(), *this,
 	                                         &Main::_handle_config };
+	Slcr_factory           _slcr           { _env, _common         };
 
-	/**
-	 * PS_CLK is either 33.33333Mhz or 50MHz. The latter is very rare though
-	 * and practically not in use, hence we stick to 33.33333Mhz.
-	 */
-	Fixed_clock _ps_clk { _common.devices().clocks(), "ps_clk",
-	                      Clock::Rate { 33333333 } };
-
-	Slcr  _slcr { _env, _common.devices().clocks(), _common.devices().resets(), _ps_clk };
 
 	void _handle_config();
 
@@ -42,6 +35,7 @@ struct Driver::Main
 	{
 		_config_rom.sigh(_config_handler);
 		_handle_config();
+		_common.create_control_devices();
 		_common.announce_service();
 	}
 };
