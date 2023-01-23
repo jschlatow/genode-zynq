@@ -1,4 +1,7 @@
 <devices>
+	<device name="slcr" type="slcr">
+		<io_mem address="0xf8000000" size="0x1000"/>;
+	</device>
 	<device name="ethernet0" type="cadence_gem">
 		<io_mem address="0xE000B000" size="0x1000"/>;
 		<irq number="54"/>

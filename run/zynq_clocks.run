@@ -43,6 +43,9 @@ set config  {
 			<provides> <service name="Platform"/> </provides>
 			<route> <any-service> <parent/> </any-service> </route>
 			<config devices_rom="config">
+				<device name="slcr" type="slcr">
+					<io_mem address="0xf8000000" size="0x1000"/>;
+				</device>
 				<device name="dummy">
 					<clock name="ps_clk"     driver_name="ps_clk"/>
 					<clock name="armpll"     driver_name="armpll"/>
