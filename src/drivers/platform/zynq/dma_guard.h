@@ -14,7 +14,6 @@
 #ifndef _SRC__DRIVERS__PLATFORM__DMA_GUARD_H_
 #define _SRC__DRIVERS__PLATFORM__DMA_GUARD_H_
 
-#include <base/registry.h>
 #include <os/attached_mmio.h>
 #include <util/register_set.h>
 #include <util/misc_math.h>
@@ -25,129 +24,148 @@
 namespace Driver {
 	using namespace Genode;
 
-	struct Guard_device;
-
-	template <typename BUFFER>
 	class Dma_guard;
+	class Dma_guard_factory;
 }
 
 
-struct Driver::Guard_device : Attached_mmio
-{
-	enum {
-		NUM_SEGMENTS = 10
-	};
-
-	struct Ctrl : Register<0x0, 32>
-	{
-		struct Enable : Bitfield<0,2>
-		{
-			enum {
-				READ_WRITE = 0x0,
-				WRITE_ONLY = 0x1,
-				READ_ONLY  = 0x2,
-				DENY       = 0x3
-			};
-		};
-	};
-
-	struct Segments : Register_array<0x4, 32, NUM_SEGMENTS, 32>
-	{
-		struct Valid     : Bitfield< 0, 1> { };
-		struct Writeable : Bitfield< 1, 1> { };
-		struct Size      : Bitfield< 4, 8> { };
-		struct Addr      : Bitfield<12,20> { };
-	};
-
-	Guard_device(Env & env, addr_t addr, size_t size)
-	: Attached_mmio(env, addr, size)
-	{ };
-};
-
-
-template <typename BUFFER>
-class Driver::Dma_guard
+class Driver::Dma_guard : private Attached_mmio,
+                          public  Driver::Control_device
 {
 	private:
 
-		Env                    & _env;
-		Device_model           & _devices;
-		Registry<BUFFER> const & _dma_buffers;
-		Device::Owner            _owner_id;
+		enum {
+			NUM_SEGMENTS = 10
+		};
 
-		template <typename FUNC>
-		void _with_guard_device(Device const & device, FUNC && fn)
+		struct Ctrl : Register<0x0, 32>
 		{
-			/* interpret reserved_memory as guard devices */
-			device.for_each_reserved_memory([&](unsigned, Platform::Device_interface::Range range) {
-				Guard_device regs(_env, range.start, range.size);
-				fn(regs);
-			});
-		}
+			struct Enable : Bitfield<0,2>
+			{
+				enum {
+					READ_WRITE = 0x0,
+					WRITE_ONLY = 0x1,
+					READ_ONLY  = 0x2,
+					DENY       = 0x3
+				};
+			};
+		};
+
+		struct Segments : Register_array<0x4, 32, NUM_SEGMENTS, 32>
+		{
+			struct Valid     : Bitfield< 0, 1> { };
+			struct Writeable : Bitfield< 1, 1> { };
+			struct Size      : Bitfield< 4, 8> { };
+			struct Addr      : Bitfield<12,20> { };
+		};
+
+		/**
+		 * Control_device interface
+		 */
+
+		void _enable() override {
+			write<Ctrl::Enable>(Ctrl::Enable::READ_WRITE); }
+
+		void _disable() override {
+			write<Ctrl::Enable>(Ctrl::Enable::DENY); }
+
+		void _add_range(Range) override;
+		void _remove_range(Range) override;
 
 	public:
 
-		Dma_guard(Env                    & env,
-		          Device_model           & devices,
-		          Registry<BUFFER> const & dma_buffers,
-		          Device::Owner            owner_id)
-		:
-		  _env(env),
-		  _devices(devices),
-		  _dma_buffers(dma_buffers),
-		  _owner_id(owner_id)
+		/**
+		 * Control_device interface
+		 */
+
+
+		Dma_guard(Env                      & env,
+		          Control_devices          & control_devices,
+		          Device::Name       const & name,
+		          Device::Io_mem::Range      range)
+		: Attached_mmio(env, range.start, range.size),
+		  Control_device(control_devices, name)
+		{ };
+
+		~Dma_guard() { _destroy_domains(); }
+};
+
+
+class Driver::Dma_guard_factory : public Driver::Control_device_factory
+{
+	private:
+
+		Genode::Env  & _env;
+
+	public:
+
+		Dma_guard_factory(Genode::Env & env, Common & common)
+		: Control_device_factory(common.control_device_factories(), Device::Type { "dma_guard" }),
+		  _env(env)
 		{ }
 
-		void update()
+		void create(Allocator & alloc, Control_devices & control_devices, Device const & device) override
 		{
-			/* apply all owned and attached devices */
-			_devices.for_each([&] (Device const & dev) {
-				if (!(dev.owner() == _owner_id))
-					return;
+			using Range = Device::Io_mem::Range;
 
-				_with_guard_device(dev, [&] (Guard_device & regs) {
-					size_t i=0;
-					_dma_buffers.for_each([&] (BUFFER const &buf) {
-						if (i >= Guard_device::NUM_SEGMENTS) {
-							error("Too many DMA buffers for DMA guard");
-							return;
-						}
-
-						Dataspace_client ds_client(buf.cap);
-						size_t size      = ds_client.size();
-						size_t size_log2 = log2(size);
-						if ((1U << size_log2) < size) size_log2++;
-
-						regs.write<Guard_device::Segments>(
-							Guard_device::Segments::Valid::bits(1) |
-							Guard_device::Segments::Writeable::bits(1) |
-							(Guard_device::Segments::Addr::reg_mask() & buf.dma_addr) |
-							Guard_device::Segments::Size::bits(size_log2-2),
-							i);
-						i++;
-					});
-
-					/* invalidate remaining segments */
-					for (; i < Guard_device::NUM_SEGMENTS; ++i) {
-						regs.write<Guard_device::Segments::Valid>(0, i);
-					}
-				});
-			});
-		}
-
-		void enable(Device const & device)
-		{
-			_with_guard_device(device, [&] (Guard_device & regs) {
-				regs.write<Guard_device::Ctrl::Enable>(Guard_device::Ctrl::Enable::READ_WRITE);
-			});
-		}
-
-		void disable(Device const & device)
-		{
-			_with_guard_device(device, [&] (Guard_device & regs) {
-				regs.write<Guard_device::Ctrl::Enable>(Guard_device::Ctrl::Enable::DENY);
+			device.for_each_io_mem([&] (unsigned idx, Range range, Device::Pci_bar, bool)
+			{
+				if (idx == 0)
+					new (alloc) Dma_guard(_env, control_devices, device.name(), range);
 			});
 		}
 };
+
+
+void Driver::Dma_guard::_add_range(Range range)
+{
+	bool found = false;
+
+	/* calculate log2 size */
+	size_t size_log2 = log2(range.size);
+	if ((1U << size_log2) < range.size) size_log2++;
+
+	for (size_t i=0; !found && i < NUM_SEGMENTS; i++) {
+		if (!read<Segments::Valid>(i)) {
+			write<Segments>(
+				Segments::Valid::bits(1) |
+				Segments::Writeable::bits(1) |
+				Segments::Addr::masked(range.start) |
+				Segments::Size::bits(size_log2-2),
+				i);
+			found = true;
+		}
+	}
+
+	if (!found)
+		error(__func__, "() all segment registers are already in use");
+}
+
+
+void Driver::Dma_guard::_remove_range(Range range)
+{
+	bool found = false;
+	uint32_t addr_field = Segments::Addr::get(range.start);
+
+	/* find segment for this address and invalidate */
+	size_t i=0;
+	for (; !found && i < NUM_SEGMENTS; i++) {
+		if (read<Segments::Valid>(i) && read<Segments::Addr>(i) == addr_field) {
+			write<Segments::Valid>(0, i);
+			found = true;
+		}
+	}
+
+	if (!found)
+		warning(__func__, "() unable to find segment");
+
+	/* move remaining segment registers to fill the space of the invalidated segment */
+	for (; i < NUM_SEGMENTS; i++) {
+		if (!read<Segments::Valid>(i))
+			break;
+
+		write<Segments>(read<Segments>(i), i-1);
+	}
+}
 
 #endif /* _SRC__DRIVERS__PLATFORM__DMA_GUARD_H_ */
